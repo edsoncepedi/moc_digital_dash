@@ -1,0 +1,25 @@
+# Ignora arquivos compilados
+*.pyc
+__pycache__/
+
+# Ignora arquivos de ambiente virtual
+.venv/
+env/
+venv/
+
+
+# Ignora configurações de IDEs
+.vscode/
+.idea/
+
+# Ignora arquivos temporários
+*.log
+*.tmp
+.DS_Store
+
+#ignora arquivos csv e xls
+*.csv
+*.xlsx
+
+#Ignora o arquivo .env
+.env
