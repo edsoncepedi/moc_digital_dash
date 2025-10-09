@@ -9,6 +9,7 @@ class Etapa(BaseModel):
     posto: str
     etapa: int 
     posicao: str = Field(default="bottom-right")
+    erro: bool
     instrucao: list[str] = Field(default_factory=lambda: [
         "Execute etapa 1",
         "Execute etapa 2",
@@ -60,17 +61,29 @@ async def enviar_mensagem(dados: dict):
 
 
 @app.post("/retangulo")
-async def enviar_retangulo(dados: dict):
+async def desenhar_retangulo(dados: dict):
     pacote = {
-        "acao": "retangulo",
-        "x": dados.get("x", 100),
-        "y": dados.get("y", 100),
-        "largura": dados.get("largura", 120),
-        "altura": dados.get("altura", 60)
+        "acao": "desenhar_retangulo",
+        "id": dados.get("id"),
+        "x": dados.get("x"),
+        "y": dados.get("y"),
+        "largura": dados.get("largura"),
+        "altura": dados.get("altura"),
+        "cor": dados.get("cor")
     }
     for ws in connections:
         await ws.send_text(json.dumps(pacote))
     return {"status": "retangulo desenhado"}
+
+@app.post("/apagar_retangulo")
+async def apagar_retangulo(dados: dict):
+    pacote = {
+        "acao": "apagar_retangulo",
+        "id": dados.get("id", 100)
+    }
+    for ws in connections:
+        await ws.send_text(json.dumps(pacote))
+    return {"status": "retangulo apagado"}
 
 @app.post("/etapas")
 async def etapas(etapa: Etapa):
@@ -82,19 +95,26 @@ async def etapas(etapa: Etapa):
     if etapa.etapa < 7:
         timer = True
 
-    erro = False
-    if etapa.etapa == 4:
-        erro = True
-
-    mensagem = {
-        "acao": "mensagem",
-        "etapa": etapa.etapa,
-        "posto": f"{etapa.posto}",
-        "texto": f"{etapa.instrucao[etapa.etapa]}",
-        "posicao": etapa.posicao,
-        "mostrar_timer": timer,
-        "erro": erro
-    }
+    if not etapa.erro:
+        mensagem = {
+            "acao": "mensagem",
+            "etapa": etapa.etapa,
+            "posto": f"{etapa.posto}",
+            "texto": f"{etapa.instrucao[etapa.etapa]}",
+            "posicao": etapa.posicao,
+            "mostrar_timer": timer,
+            "erro": etapa.erro
+        }
+    else:
+        mensagem = {
+            "acao": "mensagem",
+            "etapa": etapa.etapa,
+            "posto": f"{etapa.posto}",
+            "texto": f"Erro: {etapa.instrucao[etapa.etapa]}",
+            "posicao": etapa.posicao,
+            "mostrar_timer": timer,
+            "erro": etapa.erro
+        }
 
     # Enviar JSON para todos os clientes conectados
     for conn in connections:
