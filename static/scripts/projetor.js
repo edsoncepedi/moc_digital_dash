@@ -83,7 +83,9 @@ function desenharRetangulo(x, y, largura = 100, altura = 50) {
 
 // WebSocket principal
 function conectarWebSocket() {
-    const ws = new WebSocket("ws://localhost:5000/ws");
+    const protocol = location.protocol === "https:" ? "wss" : "ws";
+    const host = location.host; // pega IP/porta que o usuário acessou
+    const ws = new WebSocket(`${protocol}://${host}/ws`);
 
     ws.onopen = () => console.log("✅ Conectado ao WebSocket");
 
