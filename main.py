@@ -85,11 +85,12 @@ async def etapas(etapa: Etapa):
     erro = False
     if etapa.etapa == 4:
         erro = True
-        
+
     mensagem = {
         "acao": "mensagem",
         "etapa": etapa.etapa,
-        "texto": f"{etapa.posto}: {etapa.instrucao[etapa.etapa]}",
+        "posto": f"{etapa.posto}",
+        "texto": f"{etapa.instrucao[etapa.etapa]}",
         "posicao": etapa.posicao,
         "mostrar_timer": timer,
         "erro": erro

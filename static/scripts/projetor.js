@@ -1,5 +1,6 @@
 const box = document.getElementById('message-box');
 const mensagem = document.getElementById('mensagem');
+const posto = document.getElementById('posto');
 const overlay = document.getElementById('overlay');
 
 let timerInterval = null;
@@ -33,7 +34,7 @@ function pararTimer() {
 }
 
 // Mostra mensagem e controla o timer
-function mostrarMensagem(texto, posicao = "bottom-right", mostrarTimer = true) {
+function mostrarMensagem(posto, texto, posicao = "topright", mostrarTimer = true) {
     // Se já existe um timer e o novo comando não deve exibir, removemos ele
     const timerExistente = document.getElementById('timer');
     if (timerExistente) {
@@ -41,10 +42,10 @@ function mostrarMensagem(texto, posicao = "bottom-right", mostrarTimer = true) {
     }
 
     if (mostrarTimer) {
-        mensagem.innerHTML = `${texto} <span id="timer" style="margin-left:10px;font-size:0.9em;color:white;;"></span>`;
+        mensagem.innerHTML = `${posto} <br> ${texto}<span id="timer" style="margin-left:10px;font-size:0.9em;color:white;;"></span>`;
         iniciarTimer();
     } else {
-        mensagem.textContent = texto;
+        mensagem.innerHTML = `${posto} <br> ${texto}`;
         pararTimer(); // garante que o timer pare se estava ativo
     }
 
@@ -96,7 +97,7 @@ function conectarWebSocket() {
 
             switch (dados.acao) {
                 case "mensagem":
-                    mostrarMensagem(dados.texto, dados.posicao, dados.mostrar_timer ?? true);
+                    mostrarMensagem(dados.posto, dados.texto, dados.posicao, dados.mostrar_timer ?? true);
                     break;
                 case "retangulo":
                     desenharRetangulo(dados.x, dados.y, dados.largura, dados.altura);
