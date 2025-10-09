@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Checklist de Etapas</title>
+  <link rel="icon" type="image/png" href="/static/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #f3f4f6;
+    }
+
+    /* Cores dos estados */
+    .estado-ok {
+      border-color: #22c55e;
+      background-color: #22c55e;
+      color: white;
+    }
+
+    .estado-erro {
+      border-color: #ef4444;
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .estado-nenhum {
+      border-color: #d1d5db;
+      background-color: white;
+      color: #9ca3af;
+    }
+
+    /* Ícone de estado */
+    .etapa-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen">
+
+  <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-2xl border border-gray-200">
+    <h1 class="text-2xl font-semibold mb-6 text-center text-blue-700">📋 Etapas do Processo</h1>
+
+    <ul id="checklist" class="space-y-3"></ul>
+
+    <p id="status" class="text-center text-sm text-gray-500 mt-4"></p>
+  </div>
+
+  <script src="/static/scripts/monitor.js"></script>
+
+</body>
+</html>

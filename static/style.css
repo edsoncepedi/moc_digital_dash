@@ -1,0 +1,7 @@
+/* Estilo do timer que aparece junto à mensagem */
+#timer {
+    font-weight: bold;
+    color: white;;
+    margin-left: 10px;
+    font-size: 0.9em;
+}
