@@ -5,3 +5,141 @@
     margin-left: 10px;
     font-size: 0.9em;
 }
+
+body {
+    background-color: #000;
+    font-family: 'Verdana', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: left;
+    font-size: 4rem;
+    color: #fff;
+    margin-bottom: 20px;
+    margin-left: 100px;
+}
+
+/* Caixa de mensagem oculta inicialmente */
+#message-box {
+    display: none;
+    width: 100%;
+    max-width: 250px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 5px solid #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    position: fixed;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    line-height: 3rem; /* aumenta o espaço entre linhas */
+    font-weight: bold;
+    font-size: 2rem;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* Timer no topo da caixa */
+#timer {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 2px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    #message-box p {
+        font-size: 3rem;
+    }
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999; /* 🔥 garante que os rótulos fiquem acima de tudo */
+}
+
+.rect {
+    position: absolute;
+    border: 3px solid rgb(255, 255, 255);
+    background-color: transparent;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    overflow: visible; /* 🔥 permite que o label fique fora do retângulo */
+}
+
+.rect-label {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -110%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 2rem;
+    font-weight: bold;
+    white-space: nowrap;
+    color: white; /* 🔥 garante visibilidade */
+    z-index: 10000; /* opcional, reforça prioridade */
+}
+
+/* Classes de posição controláveis */
+.bottom-right { bottom: 40px; right: 100px; }
+.bottom-left { bottom: 40px; left: 100px; }
+.top-right { top: 40px; right: 100px; }
+.top-left { top: 40px; left: 100px; }
+.centered {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* NOVA MENSAGEM FLUTUANTE COM POSIÇÃO X/Y */
+#floating-message {
+    position: absolute;
+    display: none;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    border: 3px solid white;
+    border-radius: 10px;
+    padding: 10px 20px;
+    pointer-events: none;
+    z-index: 10000;
+    transition: opacity 0.4s ease-in-out;
+    white-space: nowrap;
+    transform: translate(-50%, -50%); /* 🔥 centraliza baseado em (x, y) */
+    max-width: 900px;        /* 🔧 controla o número aproximado de caracteres por linha */
+    word-wrap: break-word;   /* força quebra de linha dentro de palavras longas */
+    white-space: normal;     /* permite as quebras de linha automáticas */
+}
+
+/* Setas livres */
+.arrow {
+    position: absolute;
+    width: 2px; /* espessura da linha */
+    background-color: white;
+    transform-origin: 0 0;
+}
+
+.arrow-head {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid white; /* cor da ponta */
+    position: absolute;
+    transform-origin: center center;
+}

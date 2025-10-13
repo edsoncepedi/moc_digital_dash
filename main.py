@@ -88,6 +88,35 @@ async def apagar_retangulo(dados: dict):
         await ws.send_text(json.dumps(pacote))
     return {"status": "retangulo apagado"}
 
+@app.post("/seta")
+async def desenhar_seta(dados: dict):
+    x = dados.get("x")
+    y = dados.get("y")
+    if y <100:
+        y = 100
+    pacote = {
+        "acao": "desenhar_seta",
+        "id": dados.get("id"),
+        "x1": x,
+        "y1": y-100,
+        "x2": x+100,
+        "y2": y-100,
+        "cor": dados.get("cor")
+    }
+    for ws in connections:
+        await ws.send_text(json.dumps(pacote))
+    return {"status": "retangulo desenhado"}
+
+@app.post("/apagar_seta")
+async def apagar_seta(dados: dict):
+    pacote = {
+        "acao": "apagar_seta",
+        "id": dados.get("id", 100)
+    }
+    for ws in connections:
+        await ws.send_text(json.dumps(pacote))
+    return {"status": "retangulo apagado"}
+
 @app.post("/pronto")
 async def sistema_pronto():
     sistema_ativo["ativo"] = True
@@ -132,7 +161,7 @@ async def etapas(etapa: Etapa):
             "posto": f"{etapa.posto}",
             "texto": f"Erro: {etapa.instrucao[etapa.etapa]}",
             "posicao": etapa.posicao,
-            "mostrar_timer": timer,
+            "mostrar_timer": False,
             "erro": etapa.erro
         }
 
