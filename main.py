@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from fastapi import HTTPException
+from functools import wraps
 import json
 
 sistema_ativo = {"ativo": False}
@@ -30,6 +31,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 connections: list[WebSocket] = []
 
+def requer_sistema_ativo(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        if not sistema_ativo["ativo"]:
+            raise HTTPException(status_code=403, detail="Sistema não está ativo.")
+        return await func(*args, **kwargs)
+    return wrapper
 
 @app.get("/projetor")
 async def get(request: Request):
@@ -51,6 +59,7 @@ async def websocket_endpoint(websocket: WebSocket):
         connections.remove(websocket)
 
 @app.post("/mensagem")
+@requer_sistema_ativo
 async def enviar_mensagem(dados: dict):
     pacote = {
         "acao": "mensagem",
@@ -63,6 +72,7 @@ async def enviar_mensagem(dados: dict):
 
 
 @app.post("/retangulo")
+@requer_sistema_ativo
 async def desenhar_retangulo(dados: dict):
     pacote = {
         "acao": "desenhar_retangulo",
@@ -79,6 +89,7 @@ async def desenhar_retangulo(dados: dict):
     return {"status": "retangulo desenhado"}
 
 @app.post("/apagar_retangulo")
+@requer_sistema_ativo
 async def apagar_retangulo(dados: dict):
     pacote = {
         "acao": "apagar_retangulo",
@@ -89,6 +100,7 @@ async def apagar_retangulo(dados: dict):
     return {"status": "retangulo apagado"}
 
 @app.post("/seta")
+@requer_sistema_ativo
 async def desenhar_seta(dados: dict):
     x = dados.get("x")
     y = dados.get("y")
@@ -108,6 +120,7 @@ async def desenhar_seta(dados: dict):
     return {"status": "seta desenhada"}
 
 @app.post("/apagar_seta")
+@requer_sistema_ativo
 async def apagar_seta(dados: dict):
     pacote = {
         "acao": "apagar_seta",
@@ -135,6 +148,7 @@ async def sistema_pronto():
     return {"status": "ok"}
 
 @app.post("/etapas")
+@requer_sistema_ativo
 async def etapas(etapa: Etapa):
     """Recebe instruções e envia via WebSocket"""
     if etapa.etapa < 0 or etapa.etapa >= len(etapa.instrucao):
