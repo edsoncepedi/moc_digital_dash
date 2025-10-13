@@ -92,6 +92,16 @@ async def apagar_retangulo(dados: dict):
 async def sistema_pronto():
     sistema_ativo["ativo"] = True
     await inicia_montagem_retangulos()
+    mensagem = {
+        "acao": "inicia_Digital_Dash",
+    }
+
+    # Enviar JSON para todos os clientes conectados
+    for conn in connections:
+        try:
+            await conn.send_text(json.dumps(mensagem))
+        except Exception as e:
+            print("Erro ao enviar mensagem:", e)
     print("🚀 Sistema habilitado para atender requisições.")
     return {"status": "ok"}
 

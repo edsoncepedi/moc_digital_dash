@@ -34,6 +34,12 @@ function pararTimer() {
     timerInterval = null;
 }
 
+function iniciarDigitalDash() {
+    const tit = document.getElementById('digital_dash');
+    tit.style.display = "block";
+
+}
+
 function mostrarMensagem(posto, texto, posicao = "top-right", mostrarTimer = true) {
     const timerExistente = document.getElementById('timer');
     if (timerExistente) {
@@ -41,10 +47,12 @@ function mostrarMensagem(posto, texto, posicao = "top-right", mostrarTimer = tru
     }
 
     if (mostrarTimer) {
-        mensagem.innerHTML = `${posto} <br> ${texto}<span id="timer" style="margin-left:10px;font-size:0.9em;color:white;"></span>`;
+        mensagem.innerHTML = `${posto}<span id="timer" style="margin-left:10px;font-size:0.9em;color:white;"></span>`;
+        showFloatingMessage(texto, 950, 750);
         iniciarTimer();
     } else {
-        mensagem.innerHTML = `${posto} <br> ${texto}`;
+        mensagem.innerHTML = `${posto}`;
+        showFloatingMessage(texto, 950, 750);
         pararTimer();
     }
 
@@ -143,6 +151,34 @@ function apagarRetangulo(id) {
     }
 }
 
+/**
+ * Exibe a nova mensagem flutuante em coordenadas absolutas (x, y)
+ * @param {string} text - texto da mensagem
+ * @param {number} x - coordenada horizontal
+ * @param {number} y - coordenada vertical
+ */
+function showFloatingMessage(text, x, y) {
+    const box = document.getElementById('floating-message');
+    box.textContent = text;
+    box.style.left = `${x}px`;
+    box.style.top = `${y}px`;
+    box.style.display = 'block';
+    requestAnimationFrame(() => {
+        box.style.opacity = '1';
+    });
+}
+
+/** Oculta a nova mensagem */
+function hideFloatingMessage() {
+    const box = document.getElementById('floating-message');
+    box.style.opacity = '0';
+    setTimeout(() => box.style.display = 'none', 400);
+}
+
+// 💡 Exemplo de uso:
+// showFloatingMessage("Mensagem dinâmica", 600, 300);
+// setTimeout(hideFloatingMessage, 3000);
+
 
 // --- WebSocket Principal (ATUALIZADO) ---
 
@@ -172,6 +208,10 @@ function conectarWebSocket() {
                 // Nova ação para apagar um retângulo específico
                 case "apagar_retangulo":
                     apagarRetangulo(dados.id);
+                    break;
+                
+                case "inicia_Digital_Dash":
+                    iniciarDigitalDash();
                     break;
 
                 case "limpar_mensagem":
