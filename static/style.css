@@ -126,20 +126,17 @@ h1 {
     white-space: normal;     /* permite as quebras de linha automáticas */
 }
 
-/* Setas livres */
 .arrow {
     position: absolute;
-    width: 2px; /* espessura da linha */
     background-color: white;
-    transform-origin: 0 0;
+    transform-origin: top left;
+    border-radius: 2px;
+    z-index: 9999;
 }
 
 .arrow-head {
+    position: absolute;
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 12px solid white; /* cor da ponta */
-    position: absolute;
     transform-origin: center center;
 }

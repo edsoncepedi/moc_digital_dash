@@ -105,7 +105,7 @@ async def desenhar_seta(dados: dict):
     }
     for ws in connections:
         await ws.send_text(json.dumps(pacote))
-    return {"status": "retangulo desenhado"}
+    return {"status": "seta desenhada"}
 
 @app.post("/apagar_seta")
 async def apagar_seta(dados: dict):
@@ -115,7 +115,7 @@ async def apagar_seta(dados: dict):
     }
     for ws in connections:
         await ws.send_text(json.dumps(pacote))
-    return {"status": "retangulo apagado"}
+    return {"status": "seta apagado"}
 
 @app.post("/pronto")
 async def sistema_pronto():

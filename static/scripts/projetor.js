@@ -71,7 +71,8 @@ function limparMensagem() {
     }, 300);
 }
 
-// Mapa para rastrear as setas ativas
+
+// --- MAPA DE SETAS ATIVAS ---
 const setasAtivas = new Map();
 
 /**
@@ -86,8 +87,14 @@ const setasAtivas = new Map();
  * @param {number} [tamanhoPonta=18] - Tamanho da ponta da seta.
  */
 function desenharSeta(id, x1, y1, x2, y2, cor = 'white', espessura = 4, tamanhoPonta = 18) {
+    if (!id) {
+        console.error("⚠️ É necessário um ID para desenhar ou modificar uma seta.");
+        return;
+    }
+
     let seta = setasAtivas.get(id);
 
+    // Cria a seta se ainda não existir
     if (!seta) {
         const linha = document.createElement('div');
         linha.className = 'arrow';
@@ -98,16 +105,16 @@ function desenharSeta(id, x1, y1, x2, y2, cor = 'white', espessura = 4, tamanhoP
         linha.appendChild(ponta);
         overlay.appendChild(linha);
 
-        setasAtivas.set(id, {linha, ponta});
-        seta = {linha, ponta};
+        setasAtivas.set(id, { linha, ponta });
+        seta = { linha, ponta };
     }
 
     const dx = x2 - x1;
     const dy = y2 - y1;
-    const comprimento = Math.sqrt(dx*dx + dy*dy);
+    const comprimento = Math.sqrt(dx * dx + dy * dy);
     const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
 
-    // Ajusta a linha
+    // Linha
     seta.linha.style.position = 'absolute';
     seta.linha.style.left = `${x1}px`;
     seta.linha.style.top = `${y1}px`;
@@ -116,27 +123,44 @@ function desenharSeta(id, x1, y1, x2, y2, cor = 'white', espessura = 4, tamanhoP
     seta.linha.style.backgroundColor = cor;
     seta.linha.style.transform = `rotate(${angulo}deg)`;
     seta.linha.style.transformOrigin = 'top left';
+    seta.linha.style.borderRadius = `${espessura / 2}px`; // linha mais suave
 
-    // Ajusta a ponta da seta (triângulo)
+    // Ponta
     seta.ponta.style.position = 'absolute';
     seta.ponta.style.width = '0';
     seta.ponta.style.height = '0';
     seta.ponta.style.borderLeft = `${tamanhoPonta / 2}px solid transparent`;
     seta.ponta.style.borderRight = `${tamanhoPonta / 2}px solid transparent`;
     seta.ponta.style.borderTop = `${tamanhoPonta}px solid ${cor}`;
-    seta.ponta.style.top = `${comprimento - tamanhoPonta + 12}px`;
+    seta.ponta.style.top = `${comprimento - tamanhoPonta + (espessura / 2)}px`; // ajuste fino
     seta.ponta.style.left = `${-tamanhoPonta / 2 + espessura / 2}px`;
     seta.ponta.style.transform = `rotate(0deg)`;
 }
 
-
+/**
+ * Remove uma seta específica da tela.
+ * @param {string} id - ID da seta a ser removida.
+ */
 function apagarSeta(id) {
     if (setasAtivas.has(id)) {
-        const s = setasAtivas.get(id);
-        s.linha.remove();
+        const seta = setasAtivas.get(id);
+        seta.linha.remove();
         setasAtivas.delete(id);
+    } else {
+        console.warn(`⚠️ Tentativa de apagar seta com ID "${id}", mas ela não foi encontrada.`);
     }
 }
+
+/**
+ * Remove todas as setas da tela.
+ */
+function limparSetas() {
+    for (const { linha } of setasAtivas.values()) {
+        linha.remove();
+    }
+    setasAtivas.clear();
+}
+
 
 // --- Funções de Retângulo (ATUALIZADAS E NOVAS) ---
 
@@ -278,11 +302,11 @@ function conectarWebSocket() {
                     break;
 
                 case "desenhar_seta":
-                    desenharSeta("seta1", dados.x1, dados.y1, dados.x2, dados.y2, dados.cor, 6, 24);
+                    desenharSeta(dados.id, dados.x1, dados.y1, dados.x2, dados.y2, dados.cor, 6, 24);
                     break;
 
                 case "apagar_seta":
-                    apagarSeta("seta1");
+                    apagarSeta(dados.id);
                     break;
         
                 case "inicia_Digital_Dash":
