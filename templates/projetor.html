@@ -115,17 +115,41 @@
             transform: translate(-50%, -50%);
         }
         
+        /* NOVA MENSAGEM FLUTUANTE COM POSIÇÃO X/Y */
+        #floating-message {
+            position: absolute;
+            display: none;
+            opacity: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            border: 3px solid white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            pointer-events: none;
+            z-index: 10000;
+            transition: opacity 0.4s ease-in-out;
+            white-space: nowrap;
+            transform: translate(-50%, -50%); /* 🔥 centraliza baseado em (x, y) */
+            max-width: 900px;        /* 🔧 controla o número aproximado de caracteres por linha */
+            word-wrap: break-word;   /* força quebra de linha dentro de palavras longas */
+            white-space: normal;     /* permite as quebras de linha automáticas */
+        }
+        
     </style>
 </head>
 <body>
     <div id="overlay"></div> <!-- Área onde os retângulos serão desenhados -->
 
-    <h1 id="digital_dash">Digital Dash</h1>
+    <h1 id="digital_dash" style="display: none;">Digital Dash</h1>
 
     <div id="message-box" class="hidden">
         <span id="timer"></span>
         <p id="mensagem"></p>
     </div>
+    
+    <div id="floating-message"></div>
 
     <script src="/static/scripts/projetor.js"></script>
 </body>
