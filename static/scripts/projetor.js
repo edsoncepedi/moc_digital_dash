@@ -47,7 +47,7 @@ function mostrarMensagem(posto, texto, posicao = "top-right", mostrarTimer = tru
     }
 
     if (mostrarTimer) {
-        mensagem.innerHTML = `${posto}<span id="timer" style="margin-left:10px;font-size:0.9em;color:white;"></span>`;
+        mensagem.innerHTML = `${posto}<span id="timer" style="font-size:0.9em;color:white;"></span>`;
         showFloatingMessage(texto, 950, 750);
         iniciarTimer();
     } else {
@@ -69,6 +69,73 @@ function limparMensagem() {
         box.style.display = "none";
         mensagem.textContent = "";
     }, 300);
+}
+
+// Mapa para rastrear as setas ativas
+const setasAtivas = new Map();
+
+/**
+ * Desenha ou atualiza uma seta entre dois pontos.
+ * @param {string} id - Identificador único da seta.
+ * @param {number} x1 - Coordenada X inicial.
+ * @param {number} y1 - Coordenada Y inicial.
+ * @param {number} x2 - Coordenada X final.
+ * @param {number} y2 - Coordenada Y final.
+ * @param {string} [cor='white'] - Cor da seta.
+ * @param {number} [espessura=4] - Espessura da linha da seta.
+ * @param {number} [tamanhoPonta=18] - Tamanho da ponta da seta.
+ */
+function desenharSeta(id, x1, y1, x2, y2, cor = 'white', espessura = 4, tamanhoPonta = 18) {
+    let seta = setasAtivas.get(id);
+
+    if (!seta) {
+        const linha = document.createElement('div');
+        linha.className = 'arrow';
+
+        const ponta = document.createElement('div');
+        ponta.className = 'arrow-head';
+
+        linha.appendChild(ponta);
+        overlay.appendChild(linha);
+
+        setasAtivas.set(id, {linha, ponta});
+        seta = {linha, ponta};
+    }
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const comprimento = Math.sqrt(dx*dx + dy*dy);
+    const angulo = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    // Ajusta a linha
+    seta.linha.style.position = 'absolute';
+    seta.linha.style.left = `${x1}px`;
+    seta.linha.style.top = `${y1}px`;
+    seta.linha.style.height = `${comprimento}px`;
+    seta.linha.style.width = `${espessura}px`;
+    seta.linha.style.backgroundColor = cor;
+    seta.linha.style.transform = `rotate(${angulo}deg)`;
+    seta.linha.style.transformOrigin = 'top left';
+
+    // Ajusta a ponta da seta (triângulo)
+    seta.ponta.style.position = 'absolute';
+    seta.ponta.style.width = '0';
+    seta.ponta.style.height = '0';
+    seta.ponta.style.borderLeft = `${tamanhoPonta / 2}px solid transparent`;
+    seta.ponta.style.borderRight = `${tamanhoPonta / 2}px solid transparent`;
+    seta.ponta.style.borderTop = `${tamanhoPonta}px solid ${cor}`;
+    seta.ponta.style.top = `${comprimento - tamanhoPonta + 12}px`;
+    seta.ponta.style.left = `${-tamanhoPonta / 2 + espessura / 2}px`;
+    seta.ponta.style.transform = `rotate(0deg)`;
+}
+
+
+function apagarSeta(id) {
+    if (setasAtivas.has(id)) {
+        const s = setasAtivas.get(id);
+        s.linha.remove();
+        setasAtivas.delete(id);
+    }
 }
 
 // --- Funções de Retângulo (ATUALIZADAS E NOVAS) ---
@@ -209,7 +276,15 @@ function conectarWebSocket() {
                 case "apagar_retangulo":
                     apagarRetangulo(dados.id);
                     break;
-                
+
+                case "desenhar_seta":
+                    desenharSeta("seta1", dados.x1, dados.y1, dados.x2, dados.y2, dados.cor, 6, 24);
+                    break;
+
+                case "apagar_seta":
+                    apagarSeta("seta1");
+                    break;
+        
                 case "inicia_Digital_Dash":
                     iniciarDigitalDash();
                     break;
