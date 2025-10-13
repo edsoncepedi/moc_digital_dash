@@ -3,7 +3,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
+from fastapi import HTTPException
 import json
+
+sistema_ativo = {"ativo": False}
 
 class Etapa(BaseModel):
     posto: str
@@ -47,7 +50,6 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         connections.remove(websocket)
 
-
 @app.post("/mensagem")
 async def enviar_mensagem(dados: dict):
     pacote = {
@@ -69,7 +71,8 @@ async def desenhar_retangulo(dados: dict):
         "y": dados.get("y"),
         "largura": dados.get("largura"),
         "altura": dados.get("altura"),
-        "cor": dados.get("cor")
+        "cor": dados.get("cor"),
+        "texto": dados.get("texto")
     }
     for ws in connections:
         await ws.send_text(json.dumps(pacote))
@@ -85,12 +88,19 @@ async def apagar_retangulo(dados: dict):
         await ws.send_text(json.dumps(pacote))
     return {"status": "retangulo apagado"}
 
+@app.post("/pronto")
+async def sistema_pronto():
+    sistema_ativo["ativo"] = True
+    await inicia_montagem_retangulos()
+    print("🚀 Sistema habilitado para atender requisições.")
+    return {"status": "ok"}
+
 @app.post("/etapas")
 async def etapas(etapa: Etapa):
     """Recebe instruções e envia via WebSocket"""
     if etapa.etapa < 0 or etapa.etapa >= len(etapa.instrucao):
         return {"erro": "Índice de etapa inválido"}
-    
+
     timer = False
     if etapa.etapa < 7:
         timer = True
@@ -124,3 +134,25 @@ async def etapas(etapa: Etapa):
             print("Erro ao enviar mensagem:", e)
 
     return {"status": "enviado", "mensagem": mensagem}
+
+async def inicia_montagem_retangulos():
+    x = [400, 100, 1500]
+    y = [600, 600, 600]
+    largura = [1100, 300, 300]
+    altura = [300, 300, 300]
+    texto = ['Console', 'Left', 'Rigth']
+
+    for i in range(len(x)):
+        pacote = {
+            "acao": "desenhar_retangulo",
+            "id": f"retangulo_montagem_{i}",
+            "x": x[i],
+            "y": y[i],
+            "largura": largura[i],
+            "altura": altura[i],
+            "cor": "white",
+            "texto": texto[i]
+        }
+
+        for ws in connections:
+            await ws.send_text(json.dumps(pacote))

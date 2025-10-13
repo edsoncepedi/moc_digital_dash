@@ -80,39 +80,52 @@ function limparRetangulos() {
  * @param {number} [y] - Posição Y (opcional).
  * @param {number} [largura] - Largura do retângulo (opcional).
  * @param {number} [altura] - Altura do retângulo (opcional).
- * @param {string} [cor] - Cor da borda (opcional, ex: 'red', '#FF0000').
+ * @param {string} [cor] - Cor da borda (opcional).
+ * @param {string} [texto] - Texto a ser exibido acima do retângulo (opcional).
  */
-function desenharRetangulo(id, x, y, largura, altura, cor) {
+/**
+ * Versão final e robusta da função para desenhar/modificar retângulos e seus textos.
+ */
+function desenharRetangulo(id, x, y, largura, altura, cor, texto) {
     if (!id) {
         console.error("⚠️ É necessário um ID para desenhar ou modificar um retângulo.");
         return;
     }
 
     let rect = retangulosAtivos.get(id);
+    const corFinal = cor ?? 'white';
 
-    // --- CENÁRIO 1: O RETÂNGULO JÁ EXISTE (MODIFICAR) ---
-    if (rect) {
-        // Aplica as novas propriedades APENAS se elas foram recebidas (não são undefined)
-        if (x !== undefined) rect.style.left = `${x}px`;
-        if (y !== undefined) rect.style.top = `${y}px`;
-        if (largura !== undefined) rect.style.width = `${largura}px`;
-        if (altura !== undefined) rect.style.height = `${altura}px`;
-        if (cor !== undefined) rect.style.borderColor = cor;
-    
-    // --- CENÁRIO 2: O RETÂNGULO NÃO EXISTE (CRIAR) ---
-    } else {
+    // --- CENÁRIO 1: O RETÂNGULO NÃO EXISTE (CRIAR) ---
+    if (!rect) {
         rect = document.createElement('div');
         rect.classList.add('rect');
-
-        // Aplica as propriedades recebidas ou um valor padrão se forem undefined
-        rect.style.left = `${x ?? 0}px`; // Padrão: 0
-        rect.style.top = `${y ?? 0}px`;  // Padrão: 0
-        rect.style.width = `${largura ?? 100}px`; // Padrão: 100
-        rect.style.height = `${altura ?? 50}px`;  // Padrão: 50
-        rect.style.borderColor = cor ?? 'white';  // Padrão: 'white'
-
         overlay.appendChild(rect);
-        retangulosAtivos.set(id, rect); // Adiciona ao mapa de rastreamento
+        retangulosAtivos.set(id, rect);
+    }
+
+    // --- ATUALIZA AS PROPRIEDADES DO RETÂNGULO (PARA NOVOS E EXISTENTES) ---
+    rect.style.left = `${x ?? 0}px`;
+    rect.style.top = `${y ?? 0}px`;
+    rect.style.width = `${largura ?? 100}px`;
+    rect.style.height = `${altura ?? 50}px`;
+    rect.style.borderColor = corFinal;
+
+    // --- GERENCIA O TEXTO (LABEL) ---
+    let label = rect.querySelector('.rect-label');
+
+    // Condição para MOSTRAR o texto: o campo 'texto' deve existir e não ser vazio.
+    if (texto) {
+        if (!label) { // Se o label não existe, cria.
+            label = document.createElement('span');
+            label.className = 'rect-label';
+            rect.appendChild(label);
+        }
+        label.textContent = texto;
+        label.style.color = corFinal; // Garante que a cor esteja sempre sincronizada.
+    }
+    // Condição para REMOVER o texto: se o campo 'texto' não for enviado ou for vazio.
+    else if (label) {
+        label.remove();
     }
 }
 
@@ -152,7 +165,8 @@ function conectarWebSocket() {
                 
                 // Ação renomeada para maior clareza
                 case "desenhar_retangulo":
-                    desenharRetangulo(dados.id, dados.x, dados.y, dados.largura, dados.altura, dados.cor);
+                    // Passe o novo parâmetro 'dados.texto' para a função
+                    desenharRetangulo(dados.id, dados.x, dados.y, dados.largura, dados.altura, dados.cor, dados.texto);
                     break;
 
                 // Nova ação para apagar um retângulo específico

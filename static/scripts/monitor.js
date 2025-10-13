@@ -58,10 +58,9 @@ function marcarEtapa(index, erro = false) {
 // CONEXÃO WEBSOCKET
 // ==========================
 function conectarWebSocket() {
-    const protocol = location.protocol === "https:" ? "wss" : "ws";
-    const host = location.host; // pega IP/porta que o usuário acessou
-    const ws = new WebSocket(`${protocol}://${host}/ws`);
-
+  const protocol = location.protocol === "https:" ? "wss" : "ws";
+  const host = location.host;
+  const ws = new WebSocket(`${protocol}://${host}/ws`);
 
   ws.onopen = () => {
     console.log("✅ Conectado ao WebSocket");
@@ -74,7 +73,7 @@ function conectarWebSocket() {
 
       if (dados.acao === "mensagem" && typeof dados.etapa === "number") {
         if (dados.etapa === 0) {
-          resetChecklist(); // 🔄 reinicia
+          resetChecklist();
           marcarEtapa(0, dados.erro);
         } else {
           marcarEtapa(dados.etapa, dados.erro);
@@ -94,3 +93,19 @@ function conectarWebSocket() {
 
 conectarWebSocket();
 
+// ==========================
+// BOTÃO "SISTEMA PRONTO"
+// ==========================
+document.getElementById("btnPronto").addEventListener("click", async () => {
+  try {
+    const resposta = await fetch("/pronto", { method: "POST" });
+    if (resposta.ok) {
+      status.textContent = "✅ Sistema habilitado para atender requisições.";
+    } else {
+      status.textContent = "⚠️ Falha ao enviar comando para o servidor.";
+    }
+  } catch (erro) {
+    console.error("Erro ao enviar requisição:", erro);
+    status.textContent = "❌ Erro de conexão com o servidor.";
+  }
+});

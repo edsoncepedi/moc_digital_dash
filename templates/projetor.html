@@ -69,7 +69,6 @@
             }
         }
         
-        /* Overlay para os retângulos */
         #overlay {
             position: absolute;
             top: 0;
@@ -77,16 +76,32 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 9999; /* 🔥 garante que os rótulos fiquem acima de tudo */
         }
 
-        /* Estilo dos retângulos — apenas bordas brancas */
         .rect {
             position: absolute;
-            border: 3px solid rgb(255, 255, 255);       /* Borda branca visível */
-            background-color: transparent; /* Sem preenchimento */
+            border: 3px solid rgb(255, 255, 255);
+            background-color: transparent;
             border-radius: 6px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* leve brilho */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
             transition: all 0.3s ease;
+            overflow: visible; /* 🔥 permite que o label fique fora do retângulo */
+        }
+
+        .rect-label {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -110%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 2rem;
+            font-weight: bold;
+            white-space: nowrap;
+            color: white; /* 🔥 garante visibilidade */
+            z-index: 10000; /* opcional, reforça prioridade */
         }
 
         /* Classes de posição controláveis */
@@ -99,12 +114,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+        
     </style>
 </head>
 <body>
     <div id="overlay"></div> <!-- Área onde os retângulos serão desenhados -->
 
-    <h1>Digital Dash</h1>
+    <h1 id="digital_dash">Digital Dash</h1>
 
     <div id="message-box" class="hidden">
         <span id="timer"></span>
