@@ -313,6 +313,19 @@ function conectarWebSocket() {
                     iniciarDigitalDash();
                     break;
 
+                case "reinicia_Digital_Dash":
+                    limparRetangulos();
+                    limparSetas();
+                    limparMensagem();
+
+                    const box = document.getElementById('floating-message');
+                    box.style.display = 'none';
+
+                    const tit = document.getElementById('digital_dash');
+                    tit.style.display = "none";
+
+                    break;
+
                 case "limpar_mensagem":
                     limparMensagem();
                     break;
