@@ -80,6 +80,10 @@ function conectarWebSocket() {
         }
       }
 
+      if (dados.acao === "reinicia_Digital_Dash") {
+          resetChecklist();
+      }
+
     } catch (e) {
       console.error("Erro ao processar mensagem:", e);
     }

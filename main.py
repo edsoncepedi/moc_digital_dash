@@ -130,6 +130,23 @@ async def apagar_seta(dados: dict):
         await ws.send_text(json.dumps(pacote))
     return {"status": "seta apagado"}
 
+@app.post("/reset")
+@requer_sistema_ativo
+async def reset_dash():
+    sistema_ativo["ativo"] = False
+    mensagem = {
+        "acao": "reinicia_Digital_Dash",
+    }
+
+    # Enviar JSON para todos os clientes conectados
+    for conn in connections:
+        try:
+            await conn.send_text(json.dumps(mensagem))
+        except Exception as e:
+            print("Erro ao enviar mensagem:", e)
+    print("Sistema Resetado.")
+    return {"status": "Sistema Resetado."}
+
 @app.post("/pronto")
 async def sistema_pronto():
     sistema_ativo["ativo"] = True
