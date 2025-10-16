@@ -83,7 +83,7 @@ h1 {
     top: 0;
     left: 50%;
     transform: translate(-50%, -110%);
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 2rem;
@@ -128,7 +128,7 @@ h1 {
 
 .arrow {
     position: absolute;
-    background-color: white;
+    background-color: black;
     transform-origin: top left;
     border-radius: 2px;
     z-index: 9999;

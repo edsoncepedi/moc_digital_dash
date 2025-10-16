@@ -8,6 +8,7 @@ from functools import wraps
 import json
 
 sistema_ativo = {"ativo": False}
+estado_global = {}
 
 class Etapa(BaseModel):
     posto: str
@@ -54,7 +55,10 @@ async def websocket_endpoint(websocket: WebSocket):
     connections.append(websocket)
     try:
         while True:
-            await websocket.receive_text()
+            data = await websocket.receive_text()
+            msg = json.loads(data)
+            estado_global.update(msg["dados"])
+            print("📨 Estado atualizado:", estado_global)
     except WebSocketDisconnect:
         connections.remove(websocket)
 
@@ -82,7 +86,8 @@ async def desenhar_retangulo(dados: dict):
         "largura": dados.get("largura"),
         "altura": dados.get("altura"),
         "cor": dados.get("cor"),
-        "texto": dados.get("texto")
+        "texto": dados.get("texto"),
+        "mostra": dados.get("mostra"),
     }
     for ws in connections:
         await ws.send_text(json.dumps(pacote))
@@ -206,22 +211,34 @@ async def etapas(etapa: Etapa):
     return {"status": "enviado", "mensagem": mensagem}
 
 async def inicia_montagem_retangulos():
-    x = [400, 100, 1500]
-    y = [600, 600, 600]
-    largura = [1100, 300, 300]
-    altura = [300, 300, 300]
-    texto = ['Console', 'Left', 'Rigth']
+    ref_x_montagem = 900
+    ref_y_montagem = 200
+
+    ref_x_organiza = 250
+    ref_y_organiza = 200
+
+    largura_peca = 150
+    distancia_x = 200
+
+    x = [400, 100, 1500, ref_x_organiza, ref_x_organiza+distancia_x, ref_x_organiza, ref_x_organiza+distancia_x, ref_x_montagem, ref_x_montagem+distancia_x, ref_x_montagem, ref_x_montagem+distancia_x, ref_x_montagem-50]
+    y = [700, 700, 700, ref_y_organiza, ref_y_organiza, ref_y_organiza+250, ref_y_organiza+250, ref_y_montagem, ref_y_montagem, ref_y_montagem+250, ref_y_montagem+250, ref_y_montagem-80]
+    largura = [1100, 300, 300, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, 450]
+    altura = [200, 200, 200, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, largura_peca, 530]
+    texto = ['Console', 'Left', 'Rigth', 'Quadrado', 'Decágono', 'Triângulo', 'Hexágono', 'Quadrado', 'Decágono', 'Triângulo', 'Hexágono', 'Base']
+    id = ['Console', 'Left', 'Rigth', 'left1', 'left2', 'left3', 'left4', 'right1', 'right2', 'right3', 'right4', 'proxy']
+    mostra = [False, False, False, True, True, True, True, True, True, True, True, True]
 
     for i in range(len(x)):
         pacote = {
             "acao": "desenhar_retangulo",
-            "id": f"retangulo_montagem_{i}",
+            "id": id[i],
             "x": x[i],
             "y": y[i],
             "largura": largura[i],
             "altura": altura[i],
             "cor": "white",
-            "texto": texto[i]
+            "texto": texto[i],
+            "mostra": mostra[i]
         }
 
         for ws in connections:
