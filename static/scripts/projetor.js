@@ -181,11 +181,12 @@ function limparRetangulos() {
  * @param {number} [altura] - Altura do retângulo (opcional).
  * @param {string} [cor] - Cor da borda (opcional).
  * @param {string} [texto] - Texto a ser exibido acima do retângulo (opcional).
+ * @param {boolean} [mostra] - Se o retangulo deve ou nao ser exibido (opcional).
  */
 /**
  * Versão final e robusta da função para desenhar/modificar retângulos e seus textos.
  */
-function desenharRetangulo(id, x, y, largura, altura, cor, texto) {
+function desenharRetangulo(id, x, y, largura, altura, cor, texto, mostra = true) {
     if (!id) {
         console.error("⚠️ É necessário um ID para desenhar ou modificar um retângulo.");
         return;
@@ -202,7 +203,7 @@ function desenharRetangulo(id, x, y, largura, altura, cor, texto) {
         retangulosAtivos.set(id, rect);
     }
 
-    // --- ATUALIZA AS PROPRIEDADES DO RETÂNGULO (PARA NOVOS E EXISTENTES) ---
+    // --- ATUALIZA AS PROPRIEDADES DO RETÂNGULO ---
     rect.style.left = `${x ?? 0}px`;
     rect.style.top = `${y ?? 0}px`;
     rect.style.width = `${largura ?? 100}px`;
@@ -211,22 +212,24 @@ function desenharRetangulo(id, x, y, largura, altura, cor, texto) {
 
     // --- GERENCIA O TEXTO (LABEL) ---
     let label = rect.querySelector('.rect-label');
-
-    // Condição para MOSTRAR o texto: o campo 'texto' deve existir e não ser vazio.
     if (texto) {
-        if (!label) { // Se o label não existe, cria.
+        if (!label) {
             label = document.createElement('span');
             label.className = 'rect-label';
             rect.appendChild(label);
         }
         label.textContent = texto;
-        label.style.color = corFinal; // Garante que a cor esteja sempre sincronizada.
-    }
-    // Condição para REMOVER o texto: se o campo 'texto' não for enviado ou for vazio.
-    else if (label) {
+        label.style.color = corFinal;
+        label.style.display = mostra ? 'block' : 'none'; // controla visibilidade do texto
+    } else if (label) {
         label.remove();
     }
+
+    // --- CONTROLA VISIBILIDADE DO RETÂNGULO ---
+    rect.style.display = mostra ? 'block' : 'none';
 }
+
+
 
 /**
  * Apaga um retângulo específico da tela.
@@ -293,7 +296,7 @@ function conectarWebSocket() {
                 // Ação renomeada para maior clareza
                 case "desenhar_retangulo":
                     // Passe o novo parâmetro 'dados.texto' para a função
-                    desenharRetangulo(dados.id, dados.x, dados.y, dados.largura, dados.altura, dados.cor, dados.texto);
+                    desenharRetangulo(dados.id, dados.x, dados.y, dados.largura, dados.altura, dados.cor, dados.texto, dados.mostra);
                     break;
 
                 // Nova ação para apagar um retângulo específico
