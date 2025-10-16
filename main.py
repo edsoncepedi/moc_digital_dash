@@ -211,7 +211,7 @@ async def etapas(etapa: Etapa):
     return {"status": "enviado", "mensagem": mensagem}
 
 async def inicia_montagem_retangulos():
-    ref_x_montagem = 900
+    ref_x_montagem = 800
     ref_y_montagem = 200
 
     ref_x_organiza = 250
