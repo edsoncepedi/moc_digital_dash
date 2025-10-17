@@ -2,14 +2,12 @@
 // LISTA DE ETAPAS
 // ==========================
 const etapas = [
-    "Etapa 0",
-    "Etapa 1",
-    "Etapa 2",
-    "Etapa 3",
-    "Etapa 4",
-    "Etapa 5",
-    "Etapa 6",
-    "Etapa 7"
+    "Organize painel esquerdo de acordo com Etapa 0",
+    "Mova a forma correspondente à peça da Etapa 1 para a Base",
+    "Mova a forma correspondente à peça da Etapa 2 para a Base",
+    "Mova a forma correspondente à peça da Etapa 3 para a Base",
+    "Mova a forma correspondente à peça da Etapa 4 para a Base",
+    "Produto finalizado. Retire todas as peças para reiniciar o sistema!"
 ];
 
 const checklist = document.getElementById("checklist");
@@ -42,7 +40,7 @@ function resetChecklist() {
 }
 
 function marcarEtapa(index, erro = false) {
-  const icon = document.getElementById(`icon-${index}`);
+  const icon = document.getElementById(`icon-${index-1}`);
   if (!icon) return;
 
   if (erro) {

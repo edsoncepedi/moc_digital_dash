@@ -140,3 +140,55 @@ h1 {
     height: 0;
     transform-origin: center center;
 }
+
+/* ==========================================
+   ÁREA DE EXIBIÇÃO DE IMAGEM ÚNICA
+   ========================================== */
+
+#area-imagem {
+    display: flex;
+    flex-direction: column;   /* título em cima, imagem embaixo */
+    align-items: flex-end;    /* mantém o bloco à direita da tela */
+    justify-content: flex-start;
+    margin-top: 250px;
+    margin-right: 115px;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+#imagem-titulo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+
+    /* centraliza o título em relação à imagem */
+    text-align: center;
+    width: 100%; /* igual à largura da imagem */
+}
+
+#imagem-exibida {
+    max-width: 300px;
+    max-height: 250px;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    object-fit: contain;
+}
+#imagem-titulo.mostrar {
+    display: block;
+    opacity: 1;
+}
+
+/* Classe para exibir suavemente */
+#imagem-exibida.mostrar {
+    display: block;
+    opacity: 1;
+}

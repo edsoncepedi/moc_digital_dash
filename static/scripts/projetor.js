@@ -48,11 +48,11 @@ function mostrarMensagem(posto, texto, posicao = "top-right", mostrarTimer = tru
 
     if (mostrarTimer) {
         mensagem.innerHTML = `${posto}<span id="timer" style="font-size:0.9em;color:white;"></span>`;
-        showFloatingMessage(texto, 950, 750);
+        showFloatingMessage(texto, 950, 800);
         iniciarTimer();
     } else {
         mensagem.innerHTML = `${posto}`;
-        showFloatingMessage(texto, 950, 750);
+        showFloatingMessage(texto, 950, 800);
         pararTimer();
     }
 
@@ -193,7 +193,6 @@ function desenharRetangulo(id, x, y, largura, altura, cor, texto, mostra = true)
     }
 
     let rect = retangulosAtivos.get(id);
-    const corFinal = cor ?? 'white';
 
     // --- CENÁRIO 1: O RETÂNGULO NÃO EXISTE (CRIAR) ---
     if (!rect) {
@@ -203,32 +202,39 @@ function desenharRetangulo(id, x, y, largura, altura, cor, texto, mostra = true)
         retangulosAtivos.set(id, rect);
     }
 
-    // --- ATUALIZA AS PROPRIEDADES DO RETÂNGULO ---
-    rect.style.left = `${x ?? 0}px`;
-    rect.style.top = `${y ?? 0}px`;
-    rect.style.width = `${largura ?? 100}px`;
-    rect.style.height = `${altura ?? 50}px`;
-    rect.style.borderColor = corFinal;
+    // 🔹 Obtém valores atuais do elemento, para preservar o que não for informado
+    const estiloAtual = rect.getBoundingClientRect();
+    const leftAtual = parseFloat(rect.style.left || estiloAtual.left || 0);
+    const topAtual = parseFloat(rect.style.top || estiloAtual.top || 0);
+    const larguraAtual = parseFloat(rect.style.width || estiloAtual.width || 100);
+    const alturaAtual = parseFloat(rect.style.height || estiloAtual.height || 50);
+    const corAtual = rect.style.borderColor || 'white';
+
+    // --- Atualiza apenas os parâmetros fornecidos ---
+    rect.style.left = `${x !== undefined ? x : leftAtual}px`;
+    rect.style.top = `${y !== undefined ? y : topAtual}px`;
+    rect.style.width = `${largura !== undefined ? largura : larguraAtual}px`;
+    rect.style.height = `${altura !== undefined ? altura : alturaAtual}px`;
+    rect.style.borderColor = cor !== undefined ? cor : corAtual;
 
     // --- GERENCIA O TEXTO (LABEL) ---
     let label = rect.querySelector('.rect-label');
-    if (texto) {
+    if (texto !== undefined) {
         if (!label) {
             label = document.createElement('span');
             label.className = 'rect-label';
             rect.appendChild(label);
         }
         label.textContent = texto;
-        label.style.color = corFinal;
-        label.style.display = mostra ? 'block' : 'none'; // controla visibilidade do texto
-    } else if (label) {
-        label.remove();
+        label.style.color = cor !== undefined ? cor : corAtual;
+        label.style.display = mostra ? 'block' : 'none';
     }
 
-    // --- CONTROLA VISIBILIDADE DO RETÂNGULO ---
-    rect.style.display = mostra ? 'block' : 'none';
+    // --- CONTROLA VISIBILIDADE (se informado) ---
+    if (mostra !== undefined) {
+        rect.style.display = mostra ? 'block' : 'none';
+    }
 }
-
 
 
 /**
@@ -274,6 +280,37 @@ function hideFloatingMessage() {
 // setTimeout(hideFloatingMessage, 3000);
 
 
+function mostrarImagem(dados) {
+    const img = document.getElementById('imagem-exibida');
+    const titulo = document.getElementById('imagem-titulo');
+
+    if (dados.src) {
+        // Atualiza o texto
+        if (dados.titulo) {
+            titulo.textContent = dados.titulo;
+            titulo.style.display = 'block';
+            requestAnimationFrame(() => titulo.classList.add('mostrar'));
+        } else {
+            titulo.classList.remove('mostrar');
+            setTimeout(() => titulo.style.display = 'none', 400);
+        }
+
+        // Mostra a imagem
+        img.src = dados.src;
+        img.style.display = 'block';
+        requestAnimationFrame(() => img.classList.add('mostrar'));
+    } else {
+        // Oculta tudo
+        img.classList.remove('mostrar');
+        titulo.classList.remove('mostrar');
+        setTimeout(() => {
+            img.style.display = 'none';
+            titulo.style.display = 'none';
+        }, 400);
+    }
+}
+
+
 // --- WebSocket Principal (ATUALIZADO) ---
 
 function conectarWebSocket() {
@@ -314,6 +351,10 @@ function conectarWebSocket() {
         
                 case "inicia_Digital_Dash":
                     iniciarDigitalDash();
+                    break;
+                
+                case "mostrar_imagem":
+                    mostrarImagem({ src: dados.src, titulo: dados.titulo });
                     break;
 
                 case "reinicia_Digital_Dash":
