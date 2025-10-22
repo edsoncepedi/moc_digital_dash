@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # ==============================================
-# 📦 Instala dependências do sistema (se necessário)
+# 📦 Dependências do sistema
 # ==============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -18,12 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ==============================================
-# 📂 Diretório de trabalho dentro do container
+# 📂 Diretório de trabalho
 # ==============================================
 WORKDIR /app
 
 # ==============================================
-# 📋 Copia o arquivo de dependências e instala
+# 📋 Instala dependências Python
 # ==============================================
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -34,11 +34,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # ==============================================
-# 🔥 Expõe a porta padrão do FastAPI/Uvicorn
+# 🔥 Expõe a porta
 # ==============================================
 EXPOSE 5000
 
 # ==============================================
-# 🚀 Comando padrão para iniciar o servidor
+# 🚀 Comando para iniciar o servidor
+# OBS: main.py está dentro da pasta app
 # ==============================================
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
