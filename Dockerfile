@@ -11,14 +11,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Diretório de trabalho
-WORKDIR /app
+WORKDIR /app/app
+
 
 # Copiar requirements e instalar dependências
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar o restante do projeto
-COPY ./app ./app
+COPY ./app ./
 
 # Expõe a porta do Uvicorn
 EXPOSE 5000
