@@ -44,6 +44,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # 2. Construir o caminho para a pasta 'static' (app/static)
 STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
 
 # O FastAPI agora montará corretamente a pasta que está em 'app/static'
 # Esta solução é mais robusta dentro e fora do Docker.
@@ -52,7 +53,7 @@ app.mount(
     StaticFiles(directory=STATIC_DIR), 
     name="static"
 )
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 connections: list[WebSocket] = []
 
 def requer_sistema_ativo(func):
