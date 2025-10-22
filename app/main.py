@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
+from pathlib import Path
 from fastapi import HTTPException
 from functools import wraps
 import json
@@ -35,7 +36,22 @@ class Etapa(BaseModel):
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# ----------------------------------------------------------------------
+# CORREÇÃO DO CAMINHO ESTÁTICO:
+# ----------------------------------------------------------------------
+# 1. Obter o diretório atual onde main.py está (app/)
+BASE_DIR = Path(__file__).resolve().parent
+
+# 2. Construir o caminho para a pasta 'static' (app/static)
+STATIC_DIR = BASE_DIR / "static"
+
+# O FastAPI agora montará corretamente a pasta que está em 'app/static'
+# Esta solução é mais robusta dentro e fora do Docker.
+app.mount(
+    "/static", 
+    StaticFiles(directory=STATIC_DIR), 
+    name="static"
+)
 templates = Jinja2Templates(directory="templates")
 connections: list[WebSocket] = []
 
