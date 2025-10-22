@@ -1,45 +1,27 @@
-# ==============================================
-# 🐍 Imagem base leve do Python
-# ==============================================
+# Usar imagem base leve do Python
 FROM python:3.12-slim
 
-# ==============================================
-# 🌍 Configurações de ambiente
-# ==============================================
+# Evitar criação de arquivos .pyc e usar saída do Python sem buffer
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# ==============================================
-# 📦 Dependências do sistema
-# ==============================================
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Atualizar pacotes e instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ==============================================
-# 📂 Diretório de trabalho
-# ==============================================
+# Diretório de trabalho
 WORKDIR /app
 
-# ==============================================
-# 📋 Instala dependências Python
-# ==============================================
+# Copiar requirements e instalar dependências
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ==============================================
-# 🧩 Copia o restante do projeto
-# ==============================================
-COPY . .
+# Copiar o restante do projeto
+COPY ./app ./app
 
-# ==============================================
-# 🔥 Expõe a porta
-# ==============================================
+# Expõe a porta do Uvicorn
 EXPOSE 5000
 
-# ==============================================
-# 🚀 Comando para iniciar o servidor
-# OBS: main.py está dentro da pasta app
-# ==============================================
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+# Comando para rodar o servidor
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
