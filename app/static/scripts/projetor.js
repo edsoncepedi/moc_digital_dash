@@ -168,7 +168,9 @@ function limparSetas() {
  * Remove todos os retângulos da tela e do rastreamento.
  */
 function limparRetangulos() {
-    overlay.innerHTML = "";
+    for (const rect of retangulosAtivos.values()) {
+        rect.remove();
+    }
     retangulosAtivos.clear();
 }
 
@@ -198,6 +200,8 @@ function desenharRetangulo(id, x, y, largura, altura, cor, texto, mostra = true)
     if (!rect) {
         rect = document.createElement('div');
         rect.classList.add('rect');
+        rect.style.position = 'absolute';
+        rect.style.boxSizing = 'border-box';
         overlay.appendChild(rect);
         retangulosAtivos.set(id, rect);
     }
@@ -330,6 +334,24 @@ function conectarWebSocket() {
                     mostrarMensagem(dados.posto, dados.texto, dados.posicao, dados.mostrar_timer ?? true);
                     break;
                 
+                case "overlay_update":
+                    limparRetangulos(); // 🔥 IMPORTANTE: evita acumular lixo visual
+
+                    dados.retangulos.forEach(r => {
+                        desenharRetangulo(
+                            r.id,
+                            r.x,
+                            r.y,
+                            r.w,
+                            r.h,
+                            r.cor || "lime",
+                            r.texto || "",
+                            true
+                        );
+                    });
+                    break;
+
+
                 // Ação renomeada para maior clareza
                 case "desenhar_retangulo":
                     // Passe o novo parâmetro 'dados.texto' para a função
