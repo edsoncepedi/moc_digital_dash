@@ -2,28 +2,14 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Dash - Projetor</title>
-    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <title>Digital Dash</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
 </head>
 <body>
-    <div id="overlay"></div> <!-- Área onde os retângulos serão desenhados -->
 
-    <h1 id="digital_dash" style="display: none;">Digital Dash</h1>
+<canvas id="overlay"></canvas>
 
-    <div id="message-box" class="hidden" style="text-align:center;">
-        <span id="timer"></span>
-        <p id="mensagem"></p>
-    </div>
-    
-    <div id="area-imagem">
-        <p id="imagem-titulo"></p>
-        <img id="imagem-exibida" src="" alt="Imagem do sistema">
-    </div>
-    
-    <div id="floating-message"></div>
-
-    <script src="/static/scripts/projetor.js"></script>
+<script src="/static/scripts/projetor.js"></script>
 </body>
 </html>
