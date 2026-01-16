@@ -24,4 +24,4 @@ COPY ./app ./
 EXPOSE 5000
 
 # Comando para rodar o servidor
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
