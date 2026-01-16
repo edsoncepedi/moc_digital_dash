@@ -1,7 +1,13 @@
 const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 
-// Ajusta canvas ao tamanho da tela
+// --- CONFIGURAÇÃO MANUAL (PARA DEBUG NO UBUNTU) ---
+// Se estiver rodando localmente no Ubuntu, pode deixar automático.
+// Se estiver acessando de outro PC, coloque o IP do Ubuntu aqui.
+// Ex: const SERVER_IP = "192.168.1.15:8000";
+const SERVER_IP = null; 
+// --------------------------------------------------
+
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -10,37 +16,80 @@ window.addEventListener("resize", resize);
 resize();
 
 let estadoAtual = [];
+let socket = null;
 
 function conectarWebSocket() {
-    const protocol = location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${protocol}://${location.host}/ws/front`);
+    // Se já tiver conexão aberta ou conectando, não faz nada
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
 
-    ws.onopen = () => console.log("✅ WebSocket conectado");
+    // Lógica inteligente de URL
+    let wsUrl;
+    if (SERVER_IP) {
+        // Se você definiu o IP manualmente lá em cima
+        wsUrl = `ws://${SERVER_IP}/ws/front`;
+    } else {
+        // Automático: Pega o IP que está na barra de endereço do navegador
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        const host = location.host; // Ex: 192.168.0.X:8000
+        wsUrl = `${protocol}://${host}/ws/front`;
+    }
 
-    ws.onmessage = (event) => {
+    console.log(`🔌 Tentando conectar em: ${wsUrl}`);
+
+    socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+        console.log("✅ WebSocket conectado com sucesso!");
+    };
+
+    socket.onmessage = (event) => {
         try {
+            // Ignora mensagens de controle (como "ping") se não for JSON válido ou se for apenas texto
+            if (event.data === "ping") return;
+
             const dados = JSON.parse(event.data);
+
             if (dados.acao === "overlay_update") {
                 estadoAtual = dados.retangulos || [];
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            // Se não for JSON, apenas ignora (pode ser heartbeat)
+            // console.warn("Mensagem não-JSON recebida", event.data);
+        }
     };
 
-    ws.onclose = () => {
-        console.warn("⚠️ Desconectado. Reconectando...");
+    socket.onerror = (error) => {
+        console.error("❌ Erro no WebSocket. Verifique:", error);
+        console.error("1. O Backend está rodando com --host 0.0.0.0?");
+        console.error("2. O Firewall do Ubuntu liberou a porta 8000? (sudo ufw allow 8000)");
+        console.error("3. O IP está correto?");
+    };
+
+    socket.onclose = (event) => {
+        if (event.wasClean) {
+            console.warn(`⚠️ Desconectado limpo (Código: ${event.code})`);
+        } else {
+            console.error("⚠️ Queda de conexão abrupta (Servidor caiu ou IP inalcançável).");
+        }
+        
+        // Tenta reconectar em 2 segundos
+        socket = null;
         setTimeout(conectarWebSocket, 2000);
     };
 }
 
+// Inicia a conexão
 conectarWebSocket();
 
+// --- RENDER LOOP ---
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (const r of estadoAtual) {
         if (!r.mostra) continue;
 
-        // --- CÁLCULO DE ESCALA ---
         let scaleX = 1;
         let scaleY = 1;
 
