@@ -5,12 +5,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
 import os
+import json
 
 # Importa o estado e os websockets
 from app import state 
 from app.ws import ws_front, overlay_sender
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CALIBRATION_FILE = os.path.join(BASE_DIR, "calibracao.json")
 
 app = FastAPI()
 
@@ -38,6 +40,31 @@ async def atualizar_borda(request: Request):
     state.set_frame(dados)
     return {"status": "ok"}
 # ------------------------------------------------
+
+# --- ROTA: Carregar Calibração (Ao iniciar o Front) ---
+@app.get("/api/calibracao")
+async def get_calibracao():
+    if os.path.exists(CALIBRATION_FILE):
+        try:
+            with open(CALIBRATION_FILE, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Erro ao ler calibração: {e}")
+            return {}
+    return {} # Retorna vazio se não tiver arquivo
+
+# --- ROTA: Salvar Calibração (Quando clicar no botão) ---
+@app.post("/api/calibracao")
+async def save_calibracao(request: Request):
+    try:
+        dados = await request.json()
+        with open(CALIBRATION_FILE, "w") as f:
+            json.dump(dados, f, indent=4)
+        print("✅ Calibração salva no disco!")
+        return {"status": "ok", "msg": "Salvo com sucesso"}
+    except Exception as e:
+        print(f"❌ Erro ao salvar: {e}")
+        return {"status": "error", "msg": str(e)}
 
 @app.get("/")
 async def projetor(request: Request):

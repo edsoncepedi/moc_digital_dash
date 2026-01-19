@@ -2,11 +2,78 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Digital Dash</title>
+    <title>Digital Dash - Calibração Avançada</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <style>
+        #calibration-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #0f0;
+            padding: 15px;
+            border: 1px solid #0f0;
+            border-radius: 8px;
+            font-family: monospace;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+        .control-group { margin-bottom: 8px; display: flex; align-items: center; }
+        label { width: 110px; font-size: 14px; }
+        input[type="number"] { width: 55px; background: #222; color: #fff; border: 1px solid #555; margin-left: 5px; }
+        input[type="range"] { width: 140px; cursor: pointer; }
+        .info { font-size: 0.75em; color: #aaa; margin-top: 10px; border-top: 1px solid #333; padding-top: 5px;}
+        button { background: #0f0; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px;}
+        button:hover { background: #0c0; }
+    </style>
 </head>
 <body>
+
+<div id="calibration-panel">
+    <h3>📐 Ajuste Fino</h3>
+    
+    <div class="control-group">
+        <label>Posição X:</label>
+        <input type="range" id="offsetX" min="-10000" max="10000" step="1">
+        <input type="number" id="numOffsetX">
+    </div>
+
+    <div class="control-group">
+        <label>Posição Y:</label>
+        <input type="range" id="offsetY" min="-10000" max="10000" step="1">
+        <input type="number" id="numOffsetY">
+    </div>
+
+    <div class="control-group">
+        <label>Zoom X:</label>
+        <input type="range" id="scaleX" min="0.1" max="5.0" step="0.01">
+        <input type="number" id="numScaleX" step="0.01">
+    </div>
+
+    <div class="control-group">
+        <label>Zoom Y:</label>
+        <input type="range" id="scaleY" min="0.1" max="5.0" step="0.01">
+        <input type="number" id="numScaleY" step="0.01">
+    </div>
+
+    <div class="control-group" style="border-top: 1px dashed #444; padding-top: 8px; margin-top: 8px;">
+        <label title="Corrige distorção topo/fundo">Perspectiva:</label>
+        <input type="range" id="keystone" min="-0.002" max="0.002" step="0.00005">
+        <input type="number" id="numKeystone" step="0.00005">
+    </div>
+
+    <div class="info">
+        <b>'H'</b>: Esconder Painel<br>
+        Perspectiva corrige objetos maiores em baixo/cima.
+    </div>
+    <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <button onclick="salvarNoServidor()" style="background: #007bff; color: white;">💾 Salvar Definitivo</button>
+        <button onclick="carregarDoServidor()" style="background: #6c757d; color: white;">📂 Recarregar</button>
+    </div>
+    <button onclick="resetCalibration()">Resetar Tudo</button>
+</div>
 
 <canvas id="overlay"></canvas>
 
