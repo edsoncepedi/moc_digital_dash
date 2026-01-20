@@ -267,7 +267,36 @@ function render() {
         // --- DESENHO ---
         ctx.strokeStyle = r.cor || "#00FF00";
         ctx.lineWidth = 4;
-        ctx.strokeRect(finalX, finalY, finalW, finalH);
+        //ctx.strokeRect(finalX, finalY, finalW, finalH);
+        // Substitua o ctx.strokeRect(finalX, finalY, finalW, finalH) por:
+
+        const len = Math.min(finalW, finalH) * 0.2; // Tamanho do canto (20%)
+
+        ctx.beginPath();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = r.cor || "#00FF00";
+
+        // Canto Superior Esquerdo
+        ctx.moveTo(finalX, finalY + len);
+        ctx.lineTo(finalX, finalY);
+        ctx.lineTo(finalX + len, finalY);
+
+        // Canto Superior Direito
+        ctx.moveTo(finalX + finalW - len, finalY);
+        ctx.lineTo(finalX + finalW, finalY);
+        ctx.lineTo(finalX + finalW, finalY + len);
+
+        // Canto Inferior Direito
+        ctx.moveTo(finalX + finalW, finalY + finalH - len);
+        ctx.lineTo(finalX + finalW, finalY + finalH);
+        ctx.lineTo(finalX + finalW - len, finalY + finalH);
+
+        // Canto Inferior Esquerdo
+        ctx.moveTo(finalX + len, finalY + finalH);
+        ctx.lineTo(finalX, finalY + finalH);
+        ctx.lineTo(finalX, finalY + finalH - len);
+
+        ctx.stroke();
 
         // Desenha Texto (ID)
         if (r.texto) {
@@ -281,6 +310,8 @@ function render() {
     // Loop de animação
     requestAnimationFrame(render);
 }
+
+
 
 // --- INICIALIZAÇÃO DO SISTEMA ---
 // 1. Carrega configurações do servidor
