@@ -12,7 +12,6 @@ from app import state
 from app.ws import ws_front, overlay_sender
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CALIBRATION_FILE = os.path.join(BASE_DIR, "calibracao.json")
 
 app = FastAPI()
 
@@ -33,20 +32,21 @@ async def start_overlay_sender():
     asyncio.create_task(overlay_sender())
 
 # --- ROTA NOVA: Recebe dados do YOLO via HTTP ---
-@app.post("/api/atualizar_borda")
-async def atualizar_borda(request: Request):
+@app.post("/api/atualizar_borda/{posto_id}")
+async def atualizar_borda(posto_id: int, request: Request):
     dados = await request.json()
     # Salva no estado global
-    state.set_frame(dados)
+    state.set_frame(posto_id, dados)
     return {"status": "ok"}
 # ------------------------------------------------
 
 # --- ROTA: Carregar Calibração (Ao iniciar o Front) ---
-@app.get("/api/calibracao")
-async def get_calibracao():
-    if os.path.exists(CALIBRATION_FILE):
+@app.get("/api/calibracao/{posto_id}")
+async def get_calibracao(posto_id: int):
+    arquivo = os.path.join(BASE_DIR, f"calibracao_{posto_id}.json")
+    if os.path.exists(arquivo):
         try:
-            with open(CALIBRATION_FILE, "r") as f:
+            with open(arquivo, "r") as f:
                 return json.load(f)
         except Exception as e:
             print(f"Erro ao ler calibração: {e}")
@@ -54,11 +54,12 @@ async def get_calibracao():
     return {} # Retorna vazio se não tiver arquivo
 
 # --- ROTA: Salvar Calibração (Quando clicar no botão) ---
-@app.post("/api/calibracao")
-async def save_calibracao(request: Request):
+@app.post("/api/calibracao/{posto_id}")
+async def save_calibracao(posto_id: int, request: Request):
     try:
         dados = await request.json()
-        with open(CALIBRATION_FILE, "w") as f:
+        arquivo = os.path.join(BASE_DIR, f"calibracao_{posto_id}.json")
+        with open(arquivo, "w") as f:
             json.dump(dados, f, indent=4)
         print("✅ Calibração salva no disco!")
         return {"status": "ok", "msg": "Salvo com sucesso"}
@@ -70,6 +71,6 @@ async def save_calibracao(request: Request):
 async def projetor(request: Request):
     return templates.TemplateResponse("projetor.html", {"request": request})
 
-@app.websocket("/ws/front")
-async def websocket_front(websocket: WebSocket):
-    await ws_front(websocket)
+@app.websocket("/ws/front/{posto_id}")
+async def websocket_front(websocket: WebSocket, posto_id: int):
+    await ws_front(websocket, posto_id)

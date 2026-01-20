@@ -1,4 +1,5 @@
-
+# Variável global compartilhada
+# Armazena o último frame processado pelo YOLO
 frames = {}
 
 def set_frame(posto_id: int, dados: dict):

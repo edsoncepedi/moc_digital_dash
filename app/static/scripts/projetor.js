@@ -12,6 +12,13 @@ const ctx = canvas.getContext("2d");
 // Se precisar forçar o IP do Raspberry/Ubuntu, coloque ex: "192.168.1.15:8000"
 const SERVER_IP = null; 
 
+// --- DETECÇÃO AUTOMÁTICA DE POSTO ---
+// Lê o parâmetro ?posto=X da URL. Se não tiver, assume 1.
+const urlParams = new URLSearchParams(window.location.search);
+const POSTO_ID = urlParams.get('posto') || 1;
+
+console.log(`🖥️ Iniciando Projetor para o POSTO: ${POSTO_ID}`);
+
 // --- ESTADO GLOBAL ---
 let estadoAtual = []; // Guarda os retângulos recebidos do backend
 let socket = null;    // Objeto WebSocket
@@ -107,7 +114,7 @@ resize();
  */
 window.salvarNoServidor = async () => {
     try {
-        const response = await fetch('/api/calibracao', {
+        const response = await fetch(`/api/calibracao/${POSTO_ID}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(savedConfig)
@@ -130,7 +137,7 @@ window.salvarNoServidor = async () => {
  */
 window.carregarDoServidor = async () => {
     try {
-        const response = await fetch('/api/calibracao');
+        const response = await fetch(`/api/calibracao/${POSTO_ID}`);
         const dados = await response.json();
 
         // Verifica se vieram dados válidos
@@ -168,11 +175,11 @@ function conectarWebSocket() {
     // Determina a URL
     let wsUrl;
     if (SERVER_IP) {
-        wsUrl = `ws://${SERVER_IP}/ws/front`;
+        wsUrl = `ws://${SERVER_IP}/ws/front/${POSTO_ID}`;
     } else {
         const protocol = location.protocol === "https:" ? "wss" : "ws";
         const host = location.host;
-        wsUrl = `${protocol}://${host}/ws/front`;
+        wsUrl = `${protocol}://${location.host}/ws/front/${POSTO_ID}`;
     }
 
     console.log(`🔌 Conectando WebSocket em: ${wsUrl}`);
