@@ -1,9 +1,3 @@
-/**
- * DIGITAL DASH - PROJETOR CONTROL SCRIPT
- * Responsável por receber dados do backend, desenhar no canvas
- * e gerenciar a calibração de projeção mapeada.
- */
-
 const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 
@@ -189,22 +183,27 @@ function conectarWebSocket() {
         console.log("✅ WebSocket Conectado!");
     };
 
+    let timeoutMensagem = null;
+
     socket.onmessage = (event) => {
         try {
-            // Ignora ping simples se houver
             if (event.data === "ping") return;
 
             const dados = JSON.parse(event.data);
+
             if (dados.acao === "overlay_update") {
                 estadoAtual = dados.retangulos || [];
+
+                // Exibe mensagem se existir
+                if (dados.mensagem) {
+                    mostrarMensagem(dados.mensagem);
+                } else {
+                    esconderMensagem();
+                }
             }
         } catch (e) {
-            // Silencioso para não poluir console com erros de parse
+            // ignora erros
         }
-    };
-
-    socket.onerror = (err) => {
-        console.error("❌ Erro no WebSocket:", err);
     };
 
     socket.onclose = (e) => {
@@ -316,6 +315,77 @@ function render() {
 
     // Loop de animação
     requestAnimationFrame(render);
+}
+
+function mostrarMensagem(msg) {
+    let el = document.getElementById("mensagem-overlay");
+    if (!el) {
+        el = document.createElement("div");
+        el.id = "mensagem-overlay";
+        el.style.position = "absolute";
+        el.style.padding = "12px 20px";
+        el.style.fontSize = "22px";
+        el.style.color = "white";
+        el.style.borderRadius = "10px";
+        el.style.zIndex = "9999";
+        el.style.maxWidth = "80vw";  // largura máxima responsiva
+        el.style.wordWrap = "break-word";
+        document.body.appendChild(el);
+    }
+
+    el.innerText = msg.texto || "";
+
+    // Controle de posição (padrão: bottom center)
+    // Exemplo de valores possíveis para msg.pos:
+    // { bottom: "30px", left: "50%", transform: "translateX(-50%)" }
+    // { top: "20px", right: "20px" }
+    // { top: "50%", left: "50%", transform: "translate(-50%, -50%)" }
+    if (msg.pos) {
+        // Reseta posições anteriores para evitar conflito
+        el.style.top = "";
+        el.style.bottom = "";
+        el.style.left = "";
+        el.style.right = "";
+        el.style.transform = "";
+
+        for (const [k,v] of Object.entries(msg.pos)) {
+            el.style[k] = v;
+        }
+    } else {
+        // Posição padrão
+        el.style.bottom = "30px";
+        el.style.left = "50%";
+        el.style.transform = "translateX(-50%)";
+    }
+
+    // Controle de largura/altura
+    if (msg.width) el.style.width = msg.width;
+    else el.style.width = "auto";
+
+    if (msg.height) el.style.height = msg.height;
+    else el.style.height = "auto";
+
+    // Cores e níveis visuais
+    el.style.backgroundColor = "rgba(0,0,0,0.7)";
+    if (msg.nivel === "alerta") el.style.backgroundColor = "rgba(255,165,0,0.85)";
+    else if (msg.nivel === "erro") el.style.backgroundColor = "rgba(255,0,0,0.85)";
+
+    el.style.display = "block";
+
+    if (timeoutMensagem) clearTimeout(timeoutMensagem);
+
+    if (msg.timeout) {
+        timeoutMensagem = setTimeout(() => {
+            esconderMensagem();
+        }, msg.timeout);
+    }
+}
+
+function esconderMensagem() {
+    const el = document.getElementById("mensagem-overlay");
+    if (el) {
+        el.style.display = "none";
+    }
 }
 
 

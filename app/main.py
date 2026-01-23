@@ -74,3 +74,27 @@ async def projetor(request: Request):
 @app.websocket("/ws/front/{posto_id}")
 async def websocket_front(websocket: WebSocket, posto_id: int):
     await ws_front(websocket, posto_id)
+
+@app.post("/api/mensagem/{posto_id}")
+async def enviar_mensagem(posto_id: int, request: Request):
+    """
+    Recebe mensagens de texto para exibição no overlay
+    """
+    dados = await request.json()
+
+    """
+    Exemplo esperado:
+    {
+        "texto": "Caixa fora do padrão",
+        "nivel": "alerta",   // info | alerta | erro
+        "timeout": 5000      // opcional (ms)
+    }
+    """
+
+    state.set_mensagem(posto_id, dados)
+
+    return {
+        "status": "ok",
+        "posto": posto_id,
+        "mensagem": dados
+    }

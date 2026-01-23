@@ -36,7 +36,7 @@ async def overlay_sender():
                 continue
 
             # Pega o dado do arquivo state.py (que foi atualizado pelo POST)
-            payload = state.get_frame(posto_id)
+            payload = state.get_overlay(posto_id)
             if not payload:
                 continue
             
