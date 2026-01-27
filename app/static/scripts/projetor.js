@@ -331,7 +331,7 @@ function desenharPopup(msg) {
     const radius = m.radius ?? 10;
 
     const bg = m.bg ?? "rgba(0,0,0,0.75)";
-    const border = m.border ?? "rgb(255, 255, 255)";
+    const border = m.color ?? "rgb(255, 255, 255)";
     const textColor = m.color ?? "#ffffff";
 
     ctx.save();
