@@ -2,7 +2,7 @@ from app.feature_flags.flags import flags
 
 async def handle_feature_calibracao(payload: dict):
     enabled = bool(payload.get("enabled", False))
-    flags.set("calibracao", enabled)
+    flags.set_global("calibracao", enabled)
 
     print(
         f"🔧 Calibração GLOBAL "
