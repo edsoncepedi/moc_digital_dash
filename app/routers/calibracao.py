@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
+from app.feature_flags.deps import require_feature
 from app import state
 import os, json
 
@@ -6,7 +7,7 @@ router = APIRouter(prefix="/api", tags=["Calibração"])
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-@router.post("/atualizar_borda/{posto_id}")
+@router.post("/atualizar_borda/{posto_id}", dependencies=[Depends(require_feature("calibracao"))])
 async def atualizar_borda(posto_id: int, request: Request):
     dados = await request.json()
     # Salva no estado global

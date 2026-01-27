@@ -1,0 +1,8 @@
+Collecting aiomqtt
+  Downloading aiomqtt-2.5.0-py3-none-any.whl.metadata (4.3 kB)
+Collecting paho-mqtt
+  Using cached paho_mqtt-2.1.0-py3-none-any.whl.metadata (23 kB)
+Downloading aiomqtt-2.5.0-py3-none-any.whl (15 kB)
+Using cached paho_mqtt-2.1.0-py3-none-any.whl (67 kB)
+Installing collected packages: paho-mqtt, aiomqtt
+Successfully installed aiomqtt-2.5.0 paho-mqtt-2.1.0
