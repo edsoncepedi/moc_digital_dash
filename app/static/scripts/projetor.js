@@ -1,6 +1,8 @@
 const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 
+let mensagemAtual = null;
+
 // --- CONFIGURAÇÃO DE IP ---
 // Deixe null para detecção automática (recomendado se rodar no mesmo PC ou via DNS)
 // Se precisar forçar o IP do Raspberry/Ubuntu, coloque ex: "192.168.1.15:8000"
@@ -183,8 +185,6 @@ function conectarWebSocket() {
         console.log("✅ WebSocket Conectado!");
     };
 
-    let timeoutMensagem = null;
-
     socket.onmessage = (event) => {
         try {
             if (event.data === "ping") return;
@@ -195,10 +195,10 @@ function conectarWebSocket() {
                 estadoAtual = dados.retangulos || [];
 
                 // Exibe mensagem se existir
-                if (dados.mensagem) {
-                    mostrarMensagem(dados.mensagem);
-                } else {
-                    esconderMensagem();
+                if ("mensagem" in dados) {
+                    const m = dados.mensagem;
+                    mensagemAtual = (m && typeof m === "object" && "mensagem" in m) ? m.mensagem : m;
+                    console.log("📨 Mensagem atualizada:", mensagemAtual);
                 }
             }
         } catch (e) {
@@ -312,83 +312,131 @@ function render() {
             ctx.fillText(r.texto, finalX, Math.max(30, finalY - 10));
         }
     }
-
+    if (mensagemAtual) {
+        desenharPopup(mensagemAtual);
+    }
     // Loop de animação
     requestAnimationFrame(render);
 }
 
-function mostrarMensagem(msg) {
-    let el = document.getElementById("mensagem-overlay");
-    if (!el) {
-        el = document.createElement("div");
-        el.id = "mensagem-overlay";
-        el.style.position = "absolute";
-        el.style.padding = "12px 20px";
-        el.style.fontSize = "22px";
-        el.style.color = "white";
-        el.style.borderRadius = "10px";
-        el.style.zIndex = "9999";
-        el.style.maxWidth = "80vw";  // largura máxima responsiva
-        el.style.wordWrap = "break-word";
-        document.body.appendChild(el);
-    }
+function desenharPopup(msg) {
+    const m = msg?.mensagem ?? msg;
+    if (!m) return;
 
-    el.innerText = msg.texto || "";
+    const text = m.texto ?? "";
+    if (!text) return;
 
-    // Controle de posição (padrão: bottom center)
-    // Exemplo de valores possíveis para msg.pos:
-    // { bottom: "30px", left: "50%", transform: "translateX(-50%)" }
-    // { top: "20px", right: "20px" }
-    // { top: "50%", left: "50%", transform: "translate(-50%, -50%)" }
-    if (msg.pos) {
-        // Reseta posições anteriores para evitar conflito
-        el.style.top = "";
-        el.style.bottom = "";
-        el.style.left = "";
-        el.style.right = "";
-        el.style.transform = "";
+    const pad = m.padding ?? 12;
+    const fontSize = m.fontSize ?? 24;
+    const radius = m.radius ?? 10;
 
-        for (const [k,v] of Object.entries(msg.pos)) {
-            el.style[k] = v;
-        }
+    const bg = m.bg ?? "rgba(0,0,0,0.75)";
+    const border = m.border ?? "rgb(255, 255, 255)";
+    const textColor = m.color ?? "#ffffff";
+
+    ctx.save();
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textBaseline = "top";
+
+    const metrics = ctx.measureText(text);
+    const boxW = metrics.width + pad * 2;
+    const boxH = fontSize + pad * 2;
+
+    // =============================
+    // POSICIONAMENTO AUTOMÁTICO
+    // =============================
+
+    let boxX, boxY;
+
+    if (typeof m.x === "number" && typeof m.y === "number") {
+        // 📍 posição absoluta
+        boxX = m.x;
+        boxY = m.y;
     } else {
-        // Posição padrão
-        el.style.bottom = "30px";
-        el.style.left = "50%";
-        el.style.transform = "translateX(-50%)";
+        const margin = m.margin ?? 50;
+        const pos = m.position ?? "top-center";
+
+        switch (pos) {
+            case "top-left":
+                boxX = margin;
+                boxY = margin;
+                break;
+
+            case "top-center":
+                boxX = (canvas.width - boxW) / 2;
+                boxY = margin;
+                break;
+
+            case "top-right":
+                boxX = canvas.width - boxW - margin;
+                boxY = margin;
+                break;
+
+            case "center":
+                boxX = (canvas.width - boxW) / 2;
+                boxY = (canvas.height - boxH) / 2;
+                break;
+
+            case "bottom-left":
+                boxX = margin;
+                boxY = canvas.height - boxH - margin;
+                break;
+
+            case "bottom-center":
+                boxX = (canvas.width - boxW) / 2;
+                boxY = canvas.height - boxH - margin;
+                break;
+
+            case "bottom-right":
+                boxX = canvas.width - boxW - margin;
+                boxY = canvas.height - boxH - margin;
+                break;
+
+            default:
+                boxX = canvas.width - boxW - margin;
+                boxY = margin;
+                break;
+        }
     }
 
-    // Controle de largura/altura
-    if (msg.width) el.style.width = msg.width;
-    else el.style.width = "auto";
+    // =============================
+    // DESENHO
+    // =============================
 
-    if (msg.height) el.style.height = msg.height;
-    else el.style.height = "auto";
+    // sombra
+    ctx.shadowColor = "rgba(0,0,0,0.6)";
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
 
-    // Cores e níveis visuais
-    el.style.backgroundColor = "rgba(0,0,0,0.7)";
-    if (msg.nivel === "alerta") el.style.backgroundColor = "rgba(255,165,0,0.85)";
-    else if (msg.nivel === "erro") el.style.backgroundColor = "rgba(255,0,0,0.85)";
+    // caixa
+    roundRect(ctx, boxX, boxY, boxW, boxH, radius);
+    ctx.fillStyle = bg;
+    ctx.fill();
 
-    el.style.display = "block";
+    // borda
+    ctx.shadowColor = "transparent";
+    ctx.lineWidth = m.borderWidth ?? 5;
+    ctx.strokeStyle = border;
+    ctx.stroke();
 
-    if (timeoutMensagem) clearTimeout(timeoutMensagem);
+    // texto
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.fillText(text, boxX + boxW / 2, boxY + pad);
 
-    if (msg.timeout) {
-        timeoutMensagem = setTimeout(() => {
-            esconderMensagem();
-        }, msg.timeout);
-    }
+    ctx.restore();
 }
 
-function esconderMensagem() {
-    const el = document.getElementById("mensagem-overlay");
-    if (el) {
-        el.style.display = "none";
-    }
+function roundRect(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
 }
-
-
 
 // --- INICIALIZAÇÃO DO SISTEMA ---
 // 1. Carrega configurações do servidor
