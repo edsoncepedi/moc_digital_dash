@@ -7,8 +7,6 @@ ROUTES = {
 
 async def dispatch(topic: str, payload: dict):
     handler = ROUTES.get(topic)
-    print(ROUTES)
-    print(handler)
     if handler:
         await handler(payload)
     print(f"⚠️ No handler for topic: {topic}, payload: {payload}")

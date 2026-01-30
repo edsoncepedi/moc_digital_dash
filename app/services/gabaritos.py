@@ -1,9 +1,10 @@
 OBJETOS_ESPERADOS = {
     0: {
-        "parafuso_m3",
-        "porca_m3",
-        "arruela_3mm",
-        "suporte_lateral"
+        "cpu1",
+        "ram1",
+        "ram2",
+        "fan1",
+        "motherboard1"
     },
     1: {
         "parafuso_m4",

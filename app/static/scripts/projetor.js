@@ -1,3 +1,5 @@
+const POPUP_MAX_WIDTH = 450; // largura fixa do popup
+
 const canvas = document.getElementById("overlay");
 const ctx = canvas.getContext("2d");
 
@@ -44,6 +46,36 @@ const inputs = {
 // =========================================================
 // 1. LÓGICA DE INTERFACE E CALIBRAÇÃO
 // =========================================================
+
+function wrapLines(ctx, text, maxTextWidth) {
+    // 1) respeita quebras manuais
+    const baseLines = (text ?? "").toString().split("\n");
+    const out = [];
+
+    for (const base of baseLines) {
+        const words = base.split(/\s+/).filter(Boolean);
+
+        // linha vazia (ex: \n\n)
+        if (words.length === 0) {
+            out.push("");
+            continue;
+        }
+
+        let line = "";
+        for (const w of words) {
+            const test = line ? `${line} ${w}` : w;
+            if (ctx.measureText(test).width > maxTextWidth && line) {
+                out.push(line);
+                line = w;
+            } else {
+                line = test;
+            }
+        }
+        if (line) out.push(line);
+    }
+
+    return out;
+}
 
 /**
  * Atualiza o valor na memória, nos sliders e salva no LocalStorage (backup temporário)
@@ -323,7 +355,7 @@ function desenharPopup(msg) {
     const m = msg?.mensagem ?? msg;
     if (!m) return;
 
-    const text = m.texto ?? "";
+    const text = (m.texto ?? "").toString();
     if (!text) return;
 
     const pad = m.padding ?? 12;
@@ -331,21 +363,29 @@ function desenharPopup(msg) {
     const radius = m.radius ?? 10;
 
     const bg = m.bg ?? "rgba(0,0,0,0.75)";
-    const border = m.color ?? "rgb(255, 255, 255)";
+    const border = m.border ?? (m.color ?? "rgb(255, 255, 255)");
     const textColor = m.color ?? "#ffffff";
+
+    // ✅ largura fixa do popup (com limite pra não estourar a tela)
+    const maxBoxW = Math.min(POPUP_MAX_WIDTH, Math.floor(canvas.width * 0.95));
+    const maxTextW = maxBoxW - pad * 2;
 
     ctx.save();
     ctx.font = `bold ${fontSize}px Arial`;
     ctx.textBaseline = "top";
 
-    const metrics = ctx.measureText(text);
-    const boxW = metrics.width + pad * 2;
-    const boxH = fontSize + pad * 2;
+    // ✅ quebra por \n + wrap automático
+    const lines = wrapLines(ctx, text, maxTextW);
+
+    const lineHeight = Math.round(fontSize * 1.25);
+
+    // calcula altura dinâmica
+    const boxW = maxBoxW;
+    const boxH = lines.length * lineHeight + pad * 2;
 
     // =============================
-    // POSICIONAMENTO AUTOMÁTICO
+    // POSICIONAMENTO AUTOMÁTICO (preservado)
     // =============================
-
     let boxX, boxY;
 
     if (typeof m.x === "number" && typeof m.y === "number") {
@@ -400,7 +440,7 @@ function desenharPopup(msg) {
     }
 
     // =============================
-    // DESENHO
+    // DESENHO (preservado)
     // =============================
 
     // sombra
@@ -419,10 +459,22 @@ function desenharPopup(msg) {
     ctx.strokeStyle = border;
     ctx.stroke();
 
-    // texto
+    // texto (agora MULTILINHA)
     ctx.fillStyle = textColor;
-    ctx.textAlign = "center";
-    ctx.fillText(text, boxX + boxW / 2, boxY + pad);
+
+    const align = m.textAlign ?? "center"; // "left" | "center" | "right"
+    ctx.textAlign = align;
+
+    let textX;
+    if (align === "left") textX = boxX + pad;
+    else if (align === "right") textX = boxX + boxW - pad;
+    else textX = boxX + boxW / 2;
+
+    let y = boxY + pad;
+    for (const line of lines) {
+        ctx.fillText(line, textX, y);
+        y += lineHeight;
+    }
 
     ctx.restore();
 }

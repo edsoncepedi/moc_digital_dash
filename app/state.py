@@ -33,9 +33,22 @@ def get_overlay(posto_id: int):
     """
     Retorna o payload completo para o overlay, incluindo frame e mensagem.
     """
+    if get_frame(posto_id):
+        objetos_corretos = get_frame(posto_id).get("retangulos", [])
+        objetos_incorretos = get_frame(posto_id).get("unassigned", [])
+
+        objetos = list()
+
+        for obj in objetos_corretos:
+            obj["cor"] = "#ffffff"
+            objetos.append(obj)
+        for obj in objetos_incorretos:
+            obj["cor"] = "#ff0000"
+            objetos.append(obj)
+    
     overlay = {
         "acao": "overlay_update",
-        "retangulos": get_frame(posto_id)["retangulos"] if get_frame(posto_id) else [],
+        "retangulos": objetos if get_frame(posto_id) else [],
         "mensagem": get_mensagem(posto_id)
     }
     return overlay
