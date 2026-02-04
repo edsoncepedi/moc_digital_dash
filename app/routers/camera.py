@@ -62,20 +62,27 @@ async def atualizar_borda(posto_id: int, request: Request):
             objetos_esperados
         )
 
-        mensagem = (
-            f"POSTO {posto_id}\n\n"
-            f"Insira na mesa os sceguintes objetos:\n"
-            f"{formatar_itens(resultado['faltantes'])}\n\n"
-            f"Itens inseridos com sucesso:\n"
-            f"{formatar_itens(inseridos)}"
-        )
+        if len(resultado["faltantes"]) == 0 and len(extras) == 0:
+            mensagem = (
+                f"POSTO {posto_id}\n\n"
+                f"Organização concluída! Passe para o próximo posto."
 
-        if len(extras) > 0:
-            mensagem += (
-                f"\n\n"
-                f"Retire os seguintes itens (Fora da Receita):\n"
-                f"{formatar_itens(extras)}"
             )
+        else:
+            mensagem = (
+                f"POSTO {posto_id}\n\n"
+                f"Insira na mesa os seguintes objetos:\n"
+                f"{formatar_itens(resultado['faltantes'])}\n\n"
+                f"Itens inseridos com sucesso:\n"
+                f"{formatar_itens(inseridos)}"
+            )
+
+            if len(extras) > 0:
+                mensagem += (
+                    f"\n\n"
+                    f"Retire os seguintes itens (Fora da Receita):\n"
+                    f"{formatar_itens(extras)}"
+                )
     elif posto_id == 1:
         etapa = int(dados.get("etapa", 1))
 
