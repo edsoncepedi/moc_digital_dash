@@ -3,6 +3,8 @@ from app.feature_flags.deps import require_feature
 from app.services.montagem_service import comparar_objetos
 from app.services.gabaritos import OBJETOS_ESPERADOS
 from app import state
+from app.mqtt_instance import mqtt
+
 
 router = APIRouter(prefix="/camera", tags=["Camera"])
 
@@ -31,6 +33,8 @@ def formatar_itens(itens, vazio="Nenhum"):
     # ordena para manter estabilidade visual
     itens_ordenados = sorted(map(str, itens))
     return "\n".join(f"• {item}" for item in itens_ordenados)
+
+@router.get("/{posto_id}", dependencies=[Depends(require_feature("camera"))])
 
 @router.post("/{posto_id}", dependencies=[Depends(require_feature("camera"))])
 async def atualizar_borda(posto_id: int, request: Request):
@@ -68,6 +72,7 @@ async def atualizar_borda(posto_id: int, request: Request):
                 f"Organização concluída! Passe para o próximo posto."
 
             )
+            state.set_estado(posto_id, "FINALIZADO")
         else:
             mensagem = (
                 f"POSTO {posto_id}\n\n"
@@ -83,9 +88,11 @@ async def atualizar_borda(posto_id: int, request: Request):
                     f"Retire os seguintes itens (Fora da Receita):\n"
                     f"{formatar_itens(extras)}"
                 )
+            state.set_estado(posto_id, "MONTAGEM")
     elif posto_id == 1:
         etapa = int(dados.get("etapa", 1))
-
+        processar_estado_posto(posto_id, dados)
+        
         if etapa == 1:
             mensagem = f"POSTO {posto_id}\n\nPegue a CPU"
         elif etapa == 2:
@@ -99,6 +106,7 @@ async def atualizar_borda(posto_id: int, request: Request):
 
     elif posto_id == 2:
         etapa = int(dados.get("etapa", 1))
+        processar_estado_posto(posto_id, dados)
 
         if etapa == 1:
             mensagem = f"POSTO {posto_id}\n\nPegue a primeira memoria."
@@ -114,7 +122,7 @@ async def atualizar_borda(posto_id: int, request: Request):
     else:
         mensagem = f"POSTO {posto_id}\n\nNenhuma lógica específica implementada."
 
-    resposta.update(resultado)
+    #resposta.update(resultado)
     mensagem_projetor(posto_id, mensagem)
 
     return {"status": "ok"}

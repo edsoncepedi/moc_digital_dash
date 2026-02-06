@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.mqtt.client import MQTTClient
+from app.mqtt_instance import mqtt
 
 import asyncio, os
 
@@ -26,7 +27,6 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
-mqtt = MQTTClient()
 
 @app.on_event("startup")
 async def start_overlay_sender():
@@ -35,6 +35,10 @@ async def start_overlay_sender():
 @app.on_event("startup")
 async def startup():
     await mqtt.start()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await mqtt.stop()
 
 # ⬇️ Registrando os routers
 app.include_router(calibracao.router)

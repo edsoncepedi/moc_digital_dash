@@ -1,8 +1,22 @@
-# Estado dos frames (já existe)
 _frames = {}
-
-# NOVO: estado das mensagens por posto
 _mensagens = {}
+_estados = {}
+
+# -------- ESTADOS --------
+def get_estado(posto_id: int):
+    return _estados.get(posto_id, "INICIO")
+
+def set_estado(posto_id: int, estado: str):
+    _estados[posto_id] = estado
+
+def mudou_estado(posto_id: int, novo_estado: str) -> bool:
+    antigo = get_estado(posto_id)
+    if antigo != novo_estado:
+        _estados[posto_id] = novo_estado
+        return True
+    return False
+
+# -------- FRAMES --------
 
 def set_frame(posto_id: int, dados: dict):
     _frames[posto_id] = dados
@@ -52,3 +66,11 @@ def get_overlay(posto_id: int):
         "mensagem": get_mensagem(posto_id)
     }
     return overlay
+
+def reset_posto(posto_id: int):
+    _frames.pop(posto_id, None)
+    _mensagens.pop(posto_id, None)
+
+    # se você tiver estados
+    if "_estados" in globals():
+        _estados.pop(posto_id, None)
