@@ -24,15 +24,22 @@ async def handle_dispositivo_posto(posto_nome: str, payload_raw):
     else:
         comando = str(payload_raw).strip().upper()
 
-    if comando != "BD":
-        return
-
-    # posto_nome vem tipo "posto_0"
-    try:
-        posto_id = int(posto_nome.split("_")[-1])
-    except:
-        print(f"❌ Posto inválido no tópico: {posto_nome}")
-        return
-
-    state.reset_posto(posto_id)
+    if comando == "BD":
+        # posto_nome vem tipo "posto_0"
+        try:
+            posto_id = int(posto_nome.split("_")[-1])
+        except:
+            print(f"❌ Posto inválido no tópico: {posto_nome}")
+            return
+        
+        flags.set_posto("calibracao", posto_id, False)
+        state.reset_posto(posto_id)
+    elif comando == "BS":
+        try:
+            posto_id = int(posto_nome.split("_")[-1])
+        except:
+            print(f"❌ Posto inválido no tópico: {posto_nome}")
+            return
+        
+        flags.set_posto("calibracao", posto_id, True)
     print(f"🔄 RESET via MQTT: {posto_nome} (posto_id={posto_id})")

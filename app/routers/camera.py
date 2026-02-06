@@ -34,7 +34,13 @@ def formatar_itens(itens, vazio="Nenhum"):
     itens_ordenados = sorted(map(str, itens))
     return "\n".join(f"• {item}" for item in itens_ordenados)
 
-@router.get("/{posto_id}", dependencies=[Depends(require_feature("camera"))])
+@router.get("/{posto_id}")
+async def get_estado_posto(posto_id: int):
+    return {
+        "status": "ok",
+        "posto": posto_id,
+        "estado": state.get_estado(posto_id),
+    }
 
 @router.post("/{posto_id}", dependencies=[Depends(require_feature("camera"))])
 async def atualizar_borda(posto_id: int, request: Request):
