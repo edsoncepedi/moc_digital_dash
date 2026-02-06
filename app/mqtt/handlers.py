@@ -32,7 +32,7 @@ async def handle_dispositivo_posto(posto_nome: str, payload_raw):
             print(f"❌ Posto inválido no tópico: {posto_nome}")
             return
         
-        flags.set_posto("calibracao", posto_id, False)
+        flags.set_posto("camera", posto_id, False)
         state.reset_posto(posto_id)
     elif comando == "BS":
         try:
@@ -41,5 +41,5 @@ async def handle_dispositivo_posto(posto_nome: str, payload_raw):
             print(f"❌ Posto inválido no tópico: {posto_nome}")
             return
         
-        flags.set_posto("calibracao", posto_id, True)
+        flags.set_posto("camera", posto_id, True)
     print(f"🔄 RESET via MQTT: {posto_nome} (posto_id={posto_id})")

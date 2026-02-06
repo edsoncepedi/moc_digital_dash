@@ -10,7 +10,7 @@ class FeatureFlags:
                 "postos": {}
             },
             "camera": {
-                "global": True,
+                "global": False,
                 "postos": {}
             }
         }

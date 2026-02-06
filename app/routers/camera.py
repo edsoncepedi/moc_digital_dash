@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from app.feature_flags.deps import require_feature
 from app.services.montagem_service import comparar_objetos
 from app.services.gabaritos import OBJETOS_ESPERADOS
+from app.services.posto_fsm import processar_estado_posto
 from app import state
 from app.mqtt_instance import mqtt
 
@@ -76,7 +77,6 @@ async def atualizar_borda(posto_id: int, request: Request):
             mensagem = (
                 f"POSTO {posto_id}\n\n"
                 f"Organização concluída! Passe para o próximo posto."
-
             )
             state.set_estado(posto_id, "FINALIZADO")
         else:
