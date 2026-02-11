@@ -8,6 +8,13 @@ async def on_transicao_estado(posto_id: int, anterior: str, atual: str):
     if anterior == "INICIO" and atual == "MONTAGEM":
         await mqtt.publish(f"rastreio_nfc/esp32/{posto_id}/dispositivo", "BT1")
 
+    await mqtt.publish(
+        f"visao/posto_{posto_id}/estado",
+        {"estado": atual},
+        qos=1,
+        retain=True
+    )
+
 
 def calcular_estado(posto_id: int, dados: dict) -> str:
     # Exemplo: posto 1 e 2 usam etapa

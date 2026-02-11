@@ -66,12 +66,30 @@ class MQTTClient:
                 self._client = None
                 await asyncio.sleep(2)  # retry
 
-    async def publish(self, topic: str, payload: dict):
+    async def publish(self, topic: str, payload, qos: int = 0, retain: bool = False):
         if not self._client:
             print("⚠️ MQTT não conectado. Não foi possível publicar.")
             return
 
         try:
-            await self._client.publish(topic, json.dumps(payload))
+            # 1) Se for dict/list -> JSON
+            if isinstance(payload, (dict, list)):
+                msg = json.dumps(payload, ensure_ascii=False)
+
+            # 2) Se for bytes -> manda como está
+            elif isinstance(payload, (bytes, bytearray)):
+                msg = payload
+
+            # 3) Se for string -> manda puro (sem json.dumps)
+            elif isinstance(payload, str):
+                msg = payload
+
+            # 4) Qualquer outro tipo -> converte pra string
+            else:
+                msg = str(payload)
+
+            await self._client.publish(topic, msg, qos=qos, retain=retain)
+
         except Exception as e:
             print(f"❌ Erro ao publicar MQTT: {e}")
+
