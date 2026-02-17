@@ -1,0 +1,7 @@
+{
+    "ROI_X": 35,
+    "ROI_Y": 211,
+    "ROI_W": 535,
+    "ROI_H": 300,
+    "CONFIDENCE_THRESHOLD": 0.3
+}
