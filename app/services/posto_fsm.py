@@ -60,3 +60,24 @@ async def processar_estado_posto(posto_id: int, dados: dict):
 
     # 5) dispara evento mqtt dependendo da transição
     await on_transicao_estado(posto_id, estado_anterior, novo_estado)
+
+async def processar_estado_posto_0(novo_estado: str):
+    """
+    Função chamada em alta frequência pela rota /camera/{posto_id}.
+    Só faz algo quando detecta mudança de estado.
+    """
+    posto_id = 0
+
+    # 2) pega o estado anterior
+    estado_anterior = state.get_estado(posto_id)
+
+    # 3) se não mudou, não faz nada
+    if novo_estado == estado_anterior:
+        return
+
+    # 4) atualiza state
+    state.set_estado(posto_id, novo_estado)
+    print(f"POSTO 0 mudou de {estado_anterior} para {novo_estado}")
+
+    # 5) dispara evento mqtt dependendo da transição
+    await on_transicao_estado(posto_id, estado_anterior, novo_estado)

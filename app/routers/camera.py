@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from app.feature_flags.deps import require_feature
 from app.services.montagem_service import comparar_objetos
 from app.services.gabaritos import OBJETOS_ESPERADOS
-from app.services.posto_fsm import processar_estado_posto
+from app.services.posto_fsm import processar_estado_posto, processar_estado_posto_0
 from app import state
 from app.mqtt_instance import mqtt
 
@@ -78,7 +78,14 @@ async def atualizar_borda(posto_id: int, request: Request):
                 f"POSTO {posto_id}\n\n"
                 f"Organização concluída! Passe para o próximo posto."
             )
-            state.set_estado(posto_id, "FINALIZADO")
+            await processar_estado_posto_0("FINALIZADO")
+        elif len(objetos_detectados) == 0:
+            mensagem = (
+                f"POSTO {posto_id}\n\n"
+                f"A mesa está vazia. Insira os seguintes objetos:\n"
+                f"{formatar_itens(objetos_esperados)}"
+            )
+            await processar_estado_posto_0("INICIO")
         else:
             mensagem = (
                 f"POSTO {posto_id}\n\n"
@@ -94,10 +101,11 @@ async def atualizar_borda(posto_id: int, request: Request):
                     f"Retire os seguintes itens (Fora da Receita):\n"
                     f"{formatar_itens(extras)}"
                 )
-            state.set_estado(posto_id, "MONTAGEM")
+            
+            await processar_estado_posto_0("MONTAGEM")
     elif posto_id == 1:
         etapa = int(dados.get("etapa", 1))
-        processar_estado_posto(posto_id, dados)
+        await processar_estado_posto(posto_id, dados)
         
         if etapa == 1:
             mensagem = f"POSTO {posto_id}\n\nPegue a CPU"
@@ -112,7 +120,7 @@ async def atualizar_borda(posto_id: int, request: Request):
 
     elif posto_id == 2:
         etapa = int(dados.get("etapa", 1))
-        processar_estado_posto(posto_id, dados)
+        await processar_estado_posto(posto_id, dados)
 
         if etapa == 1:
             mensagem = f"POSTO {posto_id}\n\nPegue a primeira memoria."
