@@ -8,6 +8,7 @@ import os, json
 from fastapi.responses import HTMLResponse
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
+import requests
 
 router = APIRouter(prefix="/api", tags=["Calibração"])
 
@@ -16,10 +17,30 @@ templates = Jinja2Templates(
     directory=os.path.join(BASE_DIR, "templates")
 )
 
+url = "http://172.16.10.175/api/q_postos"
+
 CONFIG_DIR = os.getenv("CONFIG_DIR", BASE_DIR)
 os.makedirs(CONFIG_DIR, exist_ok=True)
 
-POSTOS_VALIDOS = {0, 1, 2}
+POSTOS_VALIDOS = set()
+
+response = requests.get(url)
+
+if response.status_code == 200:
+    dados = response.json()
+    print("Quantidade de postos:", dados["q_postos"])
+    ultimo_posto = dados["q_postos"]
+    for i in range(ultimo_posto+1):
+        POSTOS_VALIDOS.add(i)
+else:
+    for i in range(3):
+        POSTOS_VALIDOS.add(i)
+    print("Erro na requisição:", response.status_code)
+
+for i in range(2+1):
+    POSTOS_VALIDOS.add(i)
+
+
 
 class ConfigPosto(BaseModel):
     ROI_X: int = Field(default=35)
