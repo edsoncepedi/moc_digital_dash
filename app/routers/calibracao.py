@@ -16,6 +16,9 @@ templates = Jinja2Templates(
     directory=os.path.join(BASE_DIR, "templates")
 )
 
+CONFIG_DIR = os.getenv("CONFIG_DIR", BASE_DIR)
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
 POSTOS_VALIDOS = {0, 1, 2}
 
 class ConfigPosto(BaseModel):
@@ -26,7 +29,7 @@ class ConfigPosto(BaseModel):
     CONFIDENCE_THRESHOLD: float = Field(default=0.3, ge=0.0, le=1.0)
 
 def _arquivo_config(posto_id: int) -> str:
-    return os.path.join(BASE_DIR, f"config_{posto_id}.json")
+    return os.path.join(CONFIG_DIR, f"config_{posto_id}.json")
 
 def _validar_posto(posto_id: int):
     if posto_id not in POSTOS_VALIDOS:
@@ -34,7 +37,7 @@ def _validar_posto(posto_id: int):
 
 @router.get("/calibracao/{posto_id}")
 async def get_calibracao(posto_id: int):
-    arquivo = os.path.join(BASE_DIR, f"calibracao_{posto_id}.json")
+    arquivo = os.path.join(CONFIG_DIR, f"calibracao_{posto_id}.json")
     if os.path.exists(arquivo):
         try:
             with open(arquivo, "r") as f:
@@ -47,7 +50,7 @@ async def get_calibracao(posto_id: int):
 @router.post("/calibracao/{posto_id}")
 async def save_calibracao(posto_id: int, request: Request):
     dados = await request.json()
-    arquivo = os.path.join(BASE_DIR, f"calibracao_{posto_id}.json")
+    arquivo = os.path.join(CONFIG_DIR, f"calibracao_{posto_id}.json")
     with open(arquivo, "w") as f:
         json.dump(dados, f, indent=4)
     return {"status": "ok"}

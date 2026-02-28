@@ -51,6 +51,9 @@ echo "🚀 Subindo novo container..."
 docker run -d \
     --name $CONTAINER_NAME \
     -p $PORT_HOST:$PORT_CONTAINER \
+    -v $(pwd)/configs:/app/configs \
+    -e CONFIG_DIR=/app/configs \
+    --restart always \
     $IMAGE_NAME:$IMAGE_TAG
 
 echo "✅ Deploy concluído com sucesso!"
