@@ -1,7 +1,7 @@
 {
-    "ROI_X": 75,
-    "ROI_Y": 3,
-    "ROI_W": 535,
-    "ROI_H": 400,
-    "CONFIDENCE_THRESHOLD": 0.6
+    "ROI_X": 46,
+    "ROI_Y": 15,
+    "ROI_W": 520,
+    "ROI_H": 325,
+    "CONFIDENCE_THRESHOLD": 0.7
 }
