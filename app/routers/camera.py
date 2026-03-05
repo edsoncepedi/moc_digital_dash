@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from app.feature_flags.deps import require_feature
 from app.services.montagem_service import comparar_objetos
 from app.services.gabaritos import OBJETOS_ESPERADOS
+from app.services.utils import nome_amigavel, nomes_amigaveis_numerados
 from app.services.posto_fsm import processar_estado_posto, processar_estado_posto_0
 from app import state
 from app.mqtt_instance import mqtt
@@ -24,6 +25,22 @@ def mensagem_projetor(posto_id: int, mensagem: str):
         }
     )
 
+def formatar_checklist(esperados, detectados):
+
+    nomes = nomes_amigaveis_numerados(esperados)
+
+    linhas = []
+
+    for item in sorted(esperados):
+        nome = nomes[item]
+
+        if item in detectados:
+            linhas.append(f"☑ {nome}")
+        else:
+            linhas.append(f"☐ {nome}")
+
+    return "\n".join(linhas)
+
 def formatar_itens(itens, vazio="Nenhum"):
     """
     Recebe list, set ou tuple e retorna string legível
@@ -31,9 +48,12 @@ def formatar_itens(itens, vazio="Nenhum"):
     if not itens:
         return vazio
 
-    # ordena para manter estabilidade visual
     itens_ordenados = sorted(map(str, itens))
-    return "\n".join(f"• {item}" for item in itens_ordenados)
+
+    return "\n".join(
+        f"• {nome_amigavel(item)}"
+        for item in itens_ordenados
+    )
 
 @router.get("/{posto_id}")
 async def get_estado_posto(posto_id: int):
@@ -72,33 +92,38 @@ async def atualizar_borda(posto_id: int, request: Request):
             objetos_detectados,
             objetos_esperados
         )
-
+        
         if len(resultado["faltantes"]) == 0 and len(extras) == 0:
+            checklist = formatar_checklist(objetos_esperados, objetos_detectados)
+
             mensagem = (
                 f"POSTO {posto_id}\n\n"
-                f"Organização concluída! Passe para o próximo posto."
+                f"Organização concluída! Passe para o próximo posto.\n\n"
+                f"{checklist}"
             )
             await processar_estado_posto_0("FINALIZADO")
         elif len(objetos_detectados) == 0:
+            checklist = formatar_checklist(objetos_esperados, objetos_detectados)
+
             mensagem = (
                 f"POSTO {posto_id}\n\n"
-                f"A mesa está vazia. Insira os seguintes objetos:\n"
-                f"{formatar_itens(objetos_esperados)}"
-            )
-            await processar_estado_posto_0("INICIO")
-        else:
-            mensagem = (
-                f"POSTO {posto_id}\n\n"
-                f"Insira na mesa os seguintes objetos:\n"
-                f"{formatar_itens(resultado['faltantes'])}\n\n"
-                f"Itens inseridos com sucesso:\n"
-                f"{formatar_itens(inseridos)}"
+                f"A mesa está vazia. Inicie a montagem:\n\n"
+                f"{checklist}"
             )
 
-            if len(extras) > 0:
+            await processar_estado_posto_0("INICIO")
+
+        else:
+            checklist = formatar_checklist(objetos_esperados, objetos_detectados)
+
+            mensagem = (
+                f"POSTO {posto_id}\n\n"
+                f"Checklist da montagem:\n\n"
+                f"{checklist}"
+            )
+            if extras:
                 mensagem += (
-                    f"\n\n"
-                    f"Retire os seguintes itens (Fora da Receita):\n"
+                    "\n\n⚠ Itens fora da receita:\n"
                     f"{formatar_itens(extras)}"
                 )
             

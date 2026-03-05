@@ -1,3 +1,5 @@
+from app.services.utils import normalizar_componente
+
 _frames = {}
 _mensagens = {}
 _estados = {}
@@ -55,9 +57,19 @@ def get_overlay(posto_id: int):
 
         for obj in objetos_corretos:
             obj["cor"] = "#ffffff"
+            obj["texto"] = normalizar_componente(obj["texto"])
+
+            if posto_id == 2 and (('cpu' in obj["texto"].lower()) or ('fan' in obj["texto"].lower())):
+                obj["mostra"] = False
+                
             objetos.append(obj)
         for obj in objetos_incorretos:
             obj["cor"] = "#ff0000"
+            obj["texto"] = normalizar_componente(obj["texto"])
+
+            if posto_id == 2 and (('cpu' in obj["texto"].lower()) or ('fan' in obj["texto"].lower())):
+                obj["mostra"] = False
+                
             objetos.append(obj)
     
     overlay = {
