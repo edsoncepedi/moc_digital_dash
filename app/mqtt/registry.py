@@ -7,20 +7,26 @@ ROUTES = {
 }
 
 async def dispatch(topic: str, payload):
-    # 1) rotas fixas
-    handler = ROUTES.get(topic)
-    if handler:
-        await handler(payload)
+
+    # 1) reset de posto
+    if topic == Topics.RESET_POSTO:
+        posto_nome = payload.get("posto")  # ou como vier no payload
+        await handle_dispositivo_posto(posto_nome, payload)
         return
 
-    # 2) tópico dinâmico: rastreio_nfc/esp32/{posto}/dispositivo
+    # 2) calibracao
+    if topic == Topics.FEATURE_CALIBRACAO:
+        await handle_feature_calibracao(payload)
+        return
+
+    # 3) tópico dinâmico
     prefix = "rastreio_nfc/esp32/"
     suffix = "/dispositivo"
 
     if topic.startswith(prefix) and topic.endswith(suffix):
-        posto_nome = topic[len(prefix):-len(suffix)]  # ex: "posto_0"
+        posto_nome = topic[len(prefix):-len(suffix)]
         await handle_dispositivo_posto(posto_nome, payload)
         return
 
-    # 3) fallback
+    # 4) fallback
     print(f"⚠️ No handler for topic: {topic}, payload: {payload}")

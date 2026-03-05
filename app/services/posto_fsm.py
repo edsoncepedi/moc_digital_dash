@@ -5,7 +5,7 @@ ESTADOS = ("INICIO", "MONTAGEM", "FINALIZADO")
 
 async def on_transicao_estado(posto_id: int, anterior: str, atual: str):
     # Exemplo: publica quando entra em montagem
-    if (anterior == "INICIO" and atual == "MONTAGEM"):
+    if (anterior == "INICIO" and atual == "MONTAGEM") and posto_id != 0:
         await mqtt.publish(f"rastreio_nfc/esp32/posto_{posto_id}/dispositivo", "BT1")
 
     await mqtt.publish(

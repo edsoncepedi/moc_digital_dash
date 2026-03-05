@@ -17,6 +17,7 @@ async def handle_dispositivo_posto(posto_nome: str, payload_raw):
       - "BD"
       - {"msg": "BD"} (dependendo do ESP)
     """
+    posto_id = None
 
     # Normaliza payload
     if isinstance(payload_raw, dict):
@@ -42,4 +43,5 @@ async def handle_dispositivo_posto(posto_nome: str, payload_raw):
             return
         
         flags.set_posto("camera", posto_id, True)
-    print(f"🔄 RESET via MQTT: {posto_nome} (posto_id={posto_id})")
+    if posto_id is not None:
+        print(f"🔄 RESET via MQTT: {posto_nome} (posto_id={posto_id})")
