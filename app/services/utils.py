@@ -52,3 +52,24 @@ def nomes_amigaveis_numerados(itens):
                 resultado[item] = f"{base_nome} {i}"
 
     return resultado
+
+def processar_objetos_visao(lista, cor, posto_id):
+    objs = []
+
+    for obj in lista:
+        texto = obj["texto"].lower()
+
+        if 'hand' in texto:
+            obj["mostra"] = False
+            continue
+
+        if posto_id == 2 and ('cpu' in texto or 'fan' in texto):
+            obj["mostra"] = False
+            continue
+
+        obj["cor"] = cor
+        obj["texto"] = normalizar_componente(obj["texto"])
+
+        objs.append(obj)
+
+    return objs
