@@ -206,7 +206,6 @@ function conectarWebSocket() {
         wsUrl = `ws://${SERVER_IP}/ws/front/${POSTO_ID}`;
     } else {
         const protocol = location.protocol === "https:" ? "wss" : "ws";
-        const host = location.host;
         wsUrl = `${protocol}://${location.host}/ws/front/${POSTO_ID}`;
     }
 
@@ -224,7 +223,7 @@ function conectarWebSocket() {
             const dados = JSON.parse(event.data);
 
             if (dados.acao === "overlay_update") {
-                estadoAtual = dados.retangulos || [];
+                estadoAtual = Array.isArray(dados.retangulos) ? dados.retangulos : [];
 
                 // Exibe mensagem se existir
                 if ("mensagem" in dados) {
@@ -238,11 +237,15 @@ function conectarWebSocket() {
         }
     };
 
-    socket.onclose = (e) => {
-        // Reconexão inteligente
-        console.warn("⚠️ WebSocket desconectado. Tentando reconectar em 1s...");
-        socket = null;
-        setTimeout(conectarWebSocket, 1000);
+    let reconnectTimeout = null;
+
+    socket.onclose = () => {
+        if (reconnectTimeout) return;
+
+        reconnectTimeout = setTimeout(() => {
+            reconnectTimeout = null;
+            conectarWebSocket();
+        }, 1000);
     };
 }
 

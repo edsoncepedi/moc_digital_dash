@@ -28,27 +28,32 @@ async def ws_front(ws: WebSocket, posto_id: int):
 # Loop de Broadcast para o Projetor
 async def overlay_sender():
     print("🚀 Sistema Multi-Posto Iniciado")
+    ultimo_payload = {}
+
     while True:
         await asyncio.sleep(0.033) # 30 FPS
 
-        for posto_id, lista_sockets in conexoes.items():
+        for posto_id, lista_sockets in conexoes.copy().items():
             if not lista_sockets:
                 continue
 
             # Pega o dado do arquivo state.py (que foi atualizado pelo POST)
             payload = state.get_overlay(posto_id)
+
+            if payload == ultimo_payload.get(posto_id):
+                continue
+
             if not payload:
                 continue
-            
+
+            ultimo_payload[posto_id] = payload
             # 2. Envia APENAS para os projetores daquele posto
             texto = json.dumps(payload)
             tarefas = [ws.send_text(texto) for ws in lista_sockets]
             if tarefas:
                 # Dispara em paralelo e ignora erros de envio
-                await asyncio.gather(*tarefas, return_exceptions=True)
-"""
-            resultados = await asyncio.gather(*tarefas, return_exceptions=True)
+                resultados = await asyncio.gather(*tarefas, return_exceptions=True)
 
-            for ws, res in zip(fronts.copy(), resultados):
-                if isinstance(res, Exception):
-                    if ws in fronts: fronts.remove(ws)"""
+                for ws, res in zip(lista_sockets.copy(), resultados):
+                    if isinstance(res, Exception):
+                        lista_sockets.remove(ws)
